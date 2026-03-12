@@ -155,8 +155,11 @@ export default function DocumentsPage() {
 
   async function saveSignedDoc() {
     if (!selectedModulo || !patient) return
-    if (patientSigRef.current?.isEmpty()) return alert("❌ Firma del paziente obbligatoria")
-    if (doctorSigRef.current?.isEmpty()) return alert("❌ Firma del medico obbligatoria")
+    const isCartellaClinica = selectedModulo.id === 1
+    if (!isCartellaClinica) {
+      if (patientSigRef.current?.isEmpty()) return alert("❌ Firma del paziente obbligatoria")
+      if (doctorSigRef.current?.isEmpty()) return alert("❌ Firma del medico obbligatoria")
+    }
     setSaving(true)
     try {
       const pdfUrl = `${BUCKET_URL}/${selectedModulo.file}`
@@ -307,7 +310,7 @@ export default function DocumentsPage() {
                   ].map(({ label, ref }) => (
                     <div key={label}>
                       <div style={{ color: "#e2e8f0", fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
-                        🖊️ {label} <span style={{ color: "#ef4444" }}>*</span>
+                        🖊️ {label} {selectedModulo?.id !== 1 && <span style={{ color: "#ef4444" }}>*</span>}
                       </div>
                       <div style={{ background: "white", borderRadius: 10, border: "2px solid #38bdf8", overflow: "hidden" }}>
                         <SignatureCanvas ref={ref}
