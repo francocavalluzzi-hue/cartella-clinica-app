@@ -129,7 +129,7 @@ export default function DocumentsPage() {
     const { height: H } = p1.getSize()
 
     const draw = (text: string, x: number, y_top: number) => {
-      if (text) p1.drawText(text, { x, y: H - y_top - 2, size: fs, font, color: black })
+      if (text) p1.drawText(text, { x, y: H - y_top - 0.5, size: fs, font, color: black })
     }
 
     draw(patient.surname || "", 102, 160)
