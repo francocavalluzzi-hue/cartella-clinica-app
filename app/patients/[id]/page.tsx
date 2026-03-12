@@ -307,11 +307,11 @@ export default function PatientPage() {
             style={{background:generatingPdf?"#334155":"#1d4ed8", color:"white", border:"none", borderRadius:8, padding:"12px 24px", fontWeight:600, cursor:"pointer", fontSize:14}}>
             {generatingPdf ? "⏳ Generazione..." : "📄 Genera Cartella Clinica PDF"}
           </button>
-          <button style={{background:"#334155", color:"white", border:"none", borderRadius:8, padding:"12px 24px", fontWeight:600, cursor:"pointer", fontSize:14}}>
-            📷 Foto Pre/Post
+          <button onClick={() => router.push(`/patients/${id}/consent`)} style={{background:"#7c3aed", color:"white", border:"none", borderRadius:8, padding:"12px 24px", fontWeight:600, cursor:"pointer", fontSize:14}}>
+            📋 Consenso Informato
           </button>
           <button style={{background:"#334155", color:"white", border:"none", borderRadius:8, padding:"12px 24px", fontWeight:600, cursor:"pointer", fontSize:14}}>
-            ✏️ Modifica Dati
+            ✏️ Modifica Dati</button><button onClick={() => router.push(`/patients/${id}/documents`)} style={{background:"#0d9488", color:"white", border:"none", borderRadius:8, padding:"12px 24px", fontWeight:600, cursor:"pointer", fontSize:14}}>📄 Documenti
           </button>
         </div>
       </div>
