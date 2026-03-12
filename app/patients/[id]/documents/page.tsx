@@ -118,6 +118,29 @@ export default function DocumentsPage() {
     p4.drawImage(await embedSig(pdfDoc, patB), { x: 391.2, y: 101.9, width: sw, height: sh })
   }
 
+  async function fillCartellaClinica(
+    pdfDoc: PDFDocument, patient: any,
+    patB: ArrayBuffer, docB: ArrayBuffer
+  ) {
+    const pages = pdfDoc.getPages()
+    const font = await pdfDoc.embedStandardFont(StandardFonts.Helvetica)
+    const black = rgb(0, 0, 0)
+    const fs = 10
+    const p1 = pages[0]
+    const { height: H } = p1.getSize()
+
+    const draw = (text: string, x: number, y_top: number) => {
+      if (text) p1.drawText(text, { x, y: H - y_top - 2, size: fs, font, color: black })
+    }
+
+    draw(patient.surname || "", 102, 160)
+    draw(patient.name    || "", 332, 160)
+
+    const sw = 100, sh = 25
+    p1.drawImage(await embedSig(pdfDoc, patB), { x: 50, y: 50, width: sw, height: sh })
+    p1.drawImage(await embedSig(pdfDoc, docB), { x: 400, y: 50, width: sw, height: sh })
+  }
+
   async function fillGenericPDF(
     pdfDoc: PDFDocument, patient: any,
     patB: ArrayBuffer, docB: ArrayBuffer
@@ -148,6 +171,8 @@ export default function DocumentsPage() {
       if (!patB || !docB) throw new Error("Firme mancanti")
       if (selectedModulo.id === 0) {
         await fillSchedaAnagrafica(pdfDoc, patient, patB, docB)
+      } else if (selectedModulo.id === 1) {
+        await fillCartellaClinica(pdfDoc, patient, patB, docB)
       } else {
         await fillGenericPDF(pdfDoc, patient, patB, docB)
       }
