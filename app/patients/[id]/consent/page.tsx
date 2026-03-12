@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useRef, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -7,7 +7,8 @@ import jsPDF from "jspdf"
 import SignatureCanvas from "react-signature-canvas"
 
 export default function ConsentPage() {
-  const { id } = useParams()
+  const params = useParams()
+  const id = params.id as string
   const router = useRouter()
   const [patient, setPatient] = useState<any>(null)
   const [procedureType, setProcedureType] = useState("")

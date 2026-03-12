@@ -29,7 +29,8 @@ async function embedSig(pdfDoc: PDFDocument, bytes: ArrayBuffer) {
 }
 
 export default function DocumentsPage() {
-  const { id } = useParams()
+  const params = useParams()
+  const id = params.id as string
   const router = useRouter()
   const [patient, setPatient] = useState<any>(null)
   const [selectedModulo, setSelectedModulo] = useState<any>(null)
@@ -151,7 +152,7 @@ export default function DocumentsPage() {
         await fillGenericPDF(pdfDoc, patient, patB, docB)
       }
       const out = await pdfDoc.save()
-      const url = URL.createObjectURL(new Blob([out], { type: "application/pdf" }))
+      const url = URL.createObjectURL(new Blob([out] as any, { type: "application/pdf" }))
       Object.assign(document.createElement("a"), {
         href: url,
         download: `${selectedModulo.nome}-${patient.surname}-${patient.name}-firmato.pdf`

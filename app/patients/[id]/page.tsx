@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -6,7 +6,8 @@ import { supabase } from "../../../lib/supabaseClient"
 import jsPDF from "jspdf"
 
 export default function PatientPage() {
-  const { id } = useParams()
+  const params = useParams()
+  const id = params.id as string
   const router = useRouter()
   const [patient, setPatient] = useState<any>(null)
   const [procedures, setProcedures] = useState<any[]>([])
