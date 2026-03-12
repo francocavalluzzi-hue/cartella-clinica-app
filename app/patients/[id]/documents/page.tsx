@@ -135,10 +135,6 @@ export default function DocumentsPage() {
 
     draw(patient.surname || "", 102, 160)
     draw(patient.name    || "", 332, 160)
-
-    const sw = 100, sh = 25
-    p1.drawImage(await embedSig(pdfDoc, patB), { x: 50, y: 50, width: sw, height: sh })
-    p1.drawImage(await embedSig(pdfDoc, docB), { x: 400, y: 50, width: sw, height: sh })
   }
 
   async function fillGenericPDF(
