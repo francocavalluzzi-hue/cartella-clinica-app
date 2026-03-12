@@ -53,7 +53,7 @@ export default function DocumentsPage() {
 
   async function fillSchedaAnagrafica(
     pdfDoc: PDFDocument, patient: any,
-    patB: ArrayBuffer, docB: ArrayBuffer
+    patB: ArrayBuffer | null, docB: ArrayBuffer | null
   ) {
     const pages = pdfDoc.getPages()
     const font = await pdfDoc.embedStandardFont(StandardFonts.Helvetica)
@@ -78,24 +78,23 @@ export default function DocumentsPage() {
 
     // Firma paziente p1 — riga "Firma____" y0_doc=525.52 → y_pdf_top=316.4
     // Immagine alta 20pt, la posiziono a y = 316.4 - 20 = 296.4
-    const patImg1 = await embedSig(pdfDoc, patB)
-    p1.drawImage(patImg1, { x: 340.2, y: 316.4, width: 120, height: 12 })
+    const patImg1 = patB ? await embedSig(pdfDoc, patB) : null
+    if (patImg1) p1.drawImage(patImg1, { x: 340.2, y: 316.4, width: 120, height: 12 })
 
     // Firma medico p1 riga bassa "Firma medico____" y0_doc=742.13 → y_img=81.8
-    const docImg1 = await embedSig(pdfDoc, docB)
-    p1.drawImage(docImg1, { x: 104.3, y: 99.8, width: 110, height: 12 })
+    const docImg1 = docB ? await embedSig(pdfDoc, docB) : null
+    if (docImg1) p1.drawImage(docImg1, { x: 104.3, y: 99.8, width: 110, height: 12 })
     // Firma paziente p1 riga bassa "Firma del paziente____" campo a x=347.4
-    const patImg1b = await embedSig(pdfDoc, patB)
-    p1.drawImage(patImg1b, { x: 347.4, y: 99.8, width: 110, height: 12 })
+    if (patImg1) p1.drawImage(patImg1, { x: 347.4, y: 99.8, width: 110, height: 12 })
 
     // ── PAGINA 2 ──────────────────────────────────────────────────────
     // Riga firma: y0_doc=403.28 → y_pdf_top = 841.9 - 403.28 = 438.6
     // Immagine alta 18pt → y_img = 438.6 - 18 = 420.6
     const p2 = pages[1]
     // "Firma del paziente____" x0=74.80, la scritta finisce a x≈133
-    p2.drawImage(await embedSig(pdfDoc, patB), { x: 148.7, y: 438.6, width: 115, height: 18 })
+    if (patB) p2.drawImage(await embedSig(pdfDoc, patB), { x: 148.7, y: 438.6, width: 115, height: 18 })
     // "Firma del medico____" la parola "Firma" a x0=303.3, finisce a x≈357
-    p2.drawImage(await embedSig(pdfDoc, docB), { x: 372.7, y: 438.6, width: 115, height: 18 })
+    if (docB) p2.drawImage(await embedSig(pdfDoc, docB), { x: 372.7, y: 438.6, width: 115, height: 18 })
 
     // ── PAGINA 4 ──────────────────────────────────────────────────────
     // y_img = H - y0_doc - img_h  (immagine occupa lo spazio sopra la riga)
@@ -103,24 +102,24 @@ export default function DocumentsPage() {
     const sh = 12  // signature height
     const sw = 90  // signature width
     // Firma A: y0_doc=127.02 → y_img = 841.9 - 127.02 - 14 = 700.9, x=393.65
-    p4.drawImage(await embedSig(pdfDoc, patB), { x: 393, y: 714.9, width: sw, height: sh })
+    if (patB) p4.drawImage(await embedSig(pdfDoc, patB), { x: 393, y: 714.9, width: sw, height: sh })
     // Firma B: y0_doc=178.63 → y_img=649.3, x=390.15
-    p4.drawImage(await embedSig(pdfDoc, patB), { x: 390, y: 663.3, width: sw, height: sh })
+    if (patB) p4.drawImage(await embedSig(pdfDoc, patB), { x: 390, y: 663.3, width: sw, height: sh })
     // Firma C: y0_doc=247.42 → y_img=580.5, x=393.65
-    p4.drawImage(await embedSig(pdfDoc, patB), { x: 393, y: 594.5, width: sw, height: sh })
+    if (patB) p4.drawImage(await embedSig(pdfDoc, patB), { x: 393, y: 594.5, width: sw, height: sh })
     // Firma D: y0_doc=371.88 → y_img=456.0, x=393.65
-    p4.drawImage(await embedSig(pdfDoc, patB), { x: 393, y: 470.0, width: sw, height: sh })
+    if (patB) p4.drawImage(await embedSig(pdfDoc, patB), { x: 393, y: 470.0, width: sw, height: sh })
     // Firma E: y0_doc=414.88 → y_img=413.0, x=393.65
-    p4.drawImage(await embedSig(pdfDoc, patB), { x: 393, y: 427.0, width: sw, height: sh })
+    if (patB) p4.drawImage(await embedSig(pdfDoc, patB), { x: 393, y: 427.0, width: sw, height: sh })
     // Il Responsabile: y0_doc=440.47 → y_img=387.4, x=189 (dopo "Il Responsabile____")
-    p4.drawImage(await embedSig(pdfDoc, docB), { x: 152.2, y: 401.4, width: sw, height: sh })
+    if (docB) p4.drawImage(await embedSig(pdfDoc, docB), { x: 152.2, y: 401.4, width: sw, height: sh })
     // Firma paziente finale: y0_doc=739.98 → y_img=87.9, x=460 (dopo "Firma paziente:____")
-    p4.drawImage(await embedSig(pdfDoc, patB), { x: 391.2, y: 101.9, width: sw, height: sh })
+    if (patB) p4.drawImage(await embedSig(pdfDoc, patB), { x: 391.2, y: 101.9, width: sw, height: sh })
   }
 
   async function fillCartellaClinica(
     pdfDoc: PDFDocument, patient: any,
-    patB: ArrayBuffer, docB: ArrayBuffer
+    patB: ArrayBuffer | null, docB: ArrayBuffer | null
   ) {
     const pages = pdfDoc.getPages()
     const font = await pdfDoc.embedStandardFont(StandardFonts.Helvetica)
@@ -139,15 +138,15 @@ export default function DocumentsPage() {
 
   async function fillGenericPDF(
     pdfDoc: PDFDocument, patient: any,
-    patB: ArrayBuffer, docB: ArrayBuffer
+    patB: ArrayBuffer | null, docB: ArrayBuffer | null
   ) {
     const pages = pdfDoc.getPages()
     const font = await pdfDoc.embedStandardFont(StandardFonts.Helvetica)
     const gray = rgb(0.4, 0.4, 0.4)
     const lp = pages[pages.length - 1]
     const { width: lw } = lp.getSize()
-    lp.drawImage(await embedSig(pdfDoc, patB), { x: 50,        y: 80, width: 130, height: 35 })
-    lp.drawImage(await embedSig(pdfDoc, docB), { x: lw - 190,  y: 80, width: 130, height: 35 })
+    if (patB) lp.drawImage(await embedSig(pdfDoc, patB), { x: 50,        y: 80, width: 130, height: 35 })
+    if (docB) lp.drawImage(await embedSig(pdfDoc, docB), { x: lw - 190,  y: 80, width: 130, height: 35 })
     lp.drawText("Firma Paziente", { x: 50,       y: 70, size: 7, font, color: gray })
     lp.drawText("Firma Medico",   { x: lw - 190, y: 70, size: 7, font, color: gray })
     lp.drawText(`Data: ${new Date().toLocaleDateString("it-IT")}`, { x: 50, y: 60, size: 7, font, color: gray })
@@ -167,7 +166,7 @@ export default function DocumentsPage() {
       const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true })
       const patB = await sigToBytes(patientSigRef)
       const docB = await sigToBytes(doctorSigRef)
-      if (!patB || !docB) throw new Error("Firme mancanti")
+      if (!isCartellaClinica && (!patB || !docB)) throw new Error("Firme mancanti")
       if (selectedModulo.id === 0) {
         await fillSchedaAnagrafica(pdfDoc, patient, patB, docB)
       } else if (selectedModulo.id === 1) {
