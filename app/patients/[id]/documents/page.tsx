@@ -136,6 +136,34 @@ export default function DocumentsPage() {
     draw(patient.name    || "", 332, 160)
   }
 
+  async function fillConsensoAnestesia(
+    pdfDoc: PDFDocument, patient: any,
+    patB: ArrayBuffer | null, docB: ArrayBuffer | null
+  ) {
+    const pages = pdfDoc.getPages()
+    const font = await pdfDoc.embedStandardFont(StandardFonts.HelveticaBold)
+    const black = rgb(0, 0, 0)
+    const fs = 11.5
+    const p1 = pages[0]
+    const { height: H } = p1.getSize()
+
+    const draw = (text: string, x: number, y_top: number) => {
+      if (text) p1.drawText(text, { x, y: H - y_top - 0.5, size: fs, font, color: black })
+    }
+
+    // Coordinate fornite dall'utente: Cognome X 138, Y 105 | Nome X 130, Y 95
+    draw(patient.surname || "", 138, 105)
+    draw(patient.name    || "", 130, 95)
+
+    // Firme: posizionamento basato sul modulo visivo
+    const sw = 100, sh = 25
+    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 550, y: 395, width: sw, height: sh }) // Firma paziente
+    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 550, y: 335, width: sw, height: sh }) // Firma medico
+    // Firma finale in fondo alla pagina
+    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 340, y: 125, width: sw, height: sh })
+  }
+
+
   async function fillGenericPDF(
     pdfDoc: PDFDocument, patient: any,
     patB: ArrayBuffer | null, docB: ArrayBuffer | null
@@ -171,6 +199,8 @@ export default function DocumentsPage() {
         await fillSchedaAnagrafica(pdfDoc, patient, patB, docB)
       } else if (selectedModulo.id === 1) {
         await fillCartellaClinica(pdfDoc, patient, patB, docB)
+      } else if (selectedModulo.id === 2) {
+        await fillConsensoAnestesia(pdfDoc, patient, patB, docB)
       } else {
         await fillGenericPDF(pdfDoc, patient, patB, docB)
       }
