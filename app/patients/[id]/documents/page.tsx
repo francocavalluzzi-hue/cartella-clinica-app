@@ -11,12 +11,12 @@ const BUCKET_URL = "https://zyieuliuxvonvtldyqzk.supabase.co/storage/v1/object/p
 const MODULI = [
   { id: 0, nome: "Scheda Anagrafica", file: "0%20SCHEDA%20ANAGRAFICA%202026.pdf", icon: "📋", quando: "Prima visita" },
   { id: 1, nome: "Cartella Clinica", file: "1%20cartella%20clinica.pdf", icon: "🏥", quando: "Prima visita" },
-  { id: 2, nome: "Consenso Anestesia", file: "2%20consenso%20anestesia%2C%20liber....pdf", icon: "💉", quando: "Pre-intervento" },
+  { id: 2, nome: "Consenso Anestesia", file: "2%20consenso%20anestesia%2C%20liberatoria%2C%20richiesta%20cart%20clin.pdf", icon: "💉", quando: "Pre-intervento" },
   { id: 3, nome: "Consenso Generico", file: "3%20Consenso%20Generico%20.pdf", icon: "📝", quando: "Pre-intervento" },
-  { id: 4, nome: "Lettera Dimissioni", file: "4%20Lettera%20Dimissioni%20Pazie....pdf", icon: "🏠", quando: "Post-intervento" },
-  { id: 5, nome: "Ricetta Prescrizioni", file: "5%20Ricetta%20PRESCRIZIONE%20....pdf", icon: "💊", quando: "Post-intervento" },
+  { id: 4, nome: "Lettera Dimissioni", file: "4%20Lettera%20Dimissioni%20Pazienti.pdf", icon: "🏠", quando: "Post-intervento" },
+  { id: 5, nome: "Ricetta Prescrizioni", file: "5%20Ricetta%20PRESCRIZIONE%20medica%20dimissione.pdf", icon: "💊", quando: "Post-intervento" },
   { id: 6, nome: "Tabella Medicazioni", file: "6%20Tabella%20Medicazioni.pdf", icon: "🩺", quando: "Follow-up" },
-  { id: 7, nome: "Chirurgia Ambulatoriale", file: "7%20Chirurgia%20ambulatoriale....pdf", icon: "🔪", quando: "Pre-intervento" },
+  { id: 7, nome: "Chirurgia Ambulatoriale", file: "7%20Chirurgia%20ambulatoriale.pdf", icon: "🔪", quando: "Pre-intervento" },
 ]
 
 async function sigToBytes(sigRef: any): Promise<ArrayBuffer | null> {
