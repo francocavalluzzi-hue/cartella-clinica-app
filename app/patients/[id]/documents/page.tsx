@@ -56,9 +56,9 @@ export default function DocumentsPage() {
     patB: ArrayBuffer | null, docB: ArrayBuffer | null
   ) {
     const pages = pdfDoc.getPages()
-    const font = await pdfDoc.embedStandardFont(StandardFonts.Helvetica)
+    const font = await pdfDoc.embedStandardFont(StandardFonts.HelveticaBold)
     const black = rgb(0, 0, 0)
-    const fs = 7.5
+    const fs = 9
 
     // ── PAGINA 1 ──────────────────────────────────────────────────────
     // Coordinate misurate con pymupdf: y_pdf = 841.9 - y1_doc + 1
@@ -122,9 +122,9 @@ export default function DocumentsPage() {
     patB: ArrayBuffer | null, docB: ArrayBuffer | null
   ) {
     const pages = pdfDoc.getPages()
-    const font = await pdfDoc.embedStandardFont(StandardFonts.Helvetica)
+    const font = await pdfDoc.embedStandardFont(StandardFonts.HelveticaBold)
     const black = rgb(0, 0, 0)
-    const fs = 10
+    const fs = 11.5
     const p1 = pages[0]
     const { height: H } = p1.getSize()
 
