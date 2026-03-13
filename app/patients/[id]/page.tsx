@@ -88,6 +88,7 @@ export default function PatientPage() {
       ["Data di Nascita", patient.birthdate||"—"], ["Codice Fiscale", patient.fiscal_code||"—"],
       ["Telefono", patient.phone||"—"], ["Email", patient.email||"—"],
       ["Indirizzo", patient.address||"—"],
+      ["Città", patient.city||"—"], ["CAP", patient.cap||"—"], ["Nazione", patient.country||"—"],
     ]
     anagrafica.forEach(([label, value]) => {
       doc.setFont("helvetica","bold"); doc.setTextColor(100,116,139); doc.setFontSize(10)
@@ -186,6 +187,8 @@ export default function PatientPage() {
               {label:"Codice Fiscale", value:patient.fiscal_code||"—"},
               {label:"Telefono", value:patient.phone||"—"}, {label:"Email", value:patient.email||"—"},
               {label:"Indirizzo", value:patient.address||"—"},
+              {label:"Città", value:patient.city||"—"}, {label:"CAP", value:patient.cap||"—"},
+              {label:"Nazione", value:patient.country||"—"},
             ].map(f => (
               <div key={f.label}>
                 <div style={{color:"#94a3b8", fontSize:12, marginBottom:4}}>{f.label}</div>

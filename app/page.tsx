@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useState } from "react"
 import { supabase } from "../lib/supabaseClient"
@@ -6,7 +6,7 @@ import { supabase } from "../lib/supabaseClient"
 export default function Home() {
   const [patients, setPatients] = useState<any[]>([])
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ name:"", surname:"", birthdate:"", phone:"", email:"", address:"" })
+  const [form, setForm] = useState({ name:"", surname:"", birthdate:"", fiscal_code:"", phone:"", email:"", address:"", city:"", cap:"", country:"" })
   const [saving, setSaving] = useState(false)
 
   useEffect(() => { loadPatients() }, [])
@@ -20,7 +20,7 @@ export default function Home() {
     if (!form.name || !form.surname) return alert("Nome e cognome obbligatori")
     setSaving(true)
     await supabase.from("patients").insert([form])
-    setForm({ name:"", surname:"", birthdate:"", phone:"", email:"", address:"" })
+    setForm({ name:"", surname:"", birthdate:"", fiscal_code:"", phone:"", email:"", address:"", city:"", cap:"", country:"" })
     setShowForm(false)
     setSaving(false)
     loadPatients()
@@ -57,9 +57,13 @@ export default function Home() {
               {label:"Nome *", key:"name", type:"text"},
               {label:"Cognome *", key:"surname", type:"text"},
               {label:"Data di Nascita", key:"birthdate", type:"date"},
+              {label:"Codice Fiscale", key:"fiscal_code", type:"text"},
               {label:"Telefono", key:"phone", type:"text"},
               {label:"Email", key:"email", type:"email"},
               {label:"Indirizzo", key:"address", type:"text"},
+              {label:"Città", key:"city", type:"text"},
+              {label:"CAP", key:"cap", type:"text"},
+              {label:"Nazione", key:"country", type:"text"},
             ].map(f => (
               <div key={f.key}>
                 <label style={{display:"block", color:"#94a3b8", fontSize:13, marginBottom:6}}>{f.label}</label>
