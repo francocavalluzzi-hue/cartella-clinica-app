@@ -197,7 +197,7 @@ export default function DocumentsPage() {
       const p1 = pages[0]
       const { height: H1 } = p1.getSize()
       p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, {
-        x: 130, y: H1 - 105.5, size: fs, font, color: black
+        x: 138, y: H1 - 104.5, size: fs, font, color: black
       })
     }
 
@@ -208,7 +208,7 @@ export default function DocumentsPage() {
 
     // Alzate le firme per allinearle alle righe del PDF
     if (patB) lp.drawImage(await embedSig(pdfDoc, patB), { x: 130, y: 346, width: sw, height: sh })
-    if (docB) lp.drawImage(await embedSig(pdfDoc, docB), { x: 130, y: 308, width: sw, height: sh })
+    if (docB) lp.drawImage(await embedSig(pdfDoc, docB), { x: 130, y: 303, width: sw, height: sh })
   }
 
   async function saveSignedDoc() {
