@@ -152,15 +152,14 @@ export default function DocumentsPage() {
     }
 
     // Coordinate fornite dall'utente: Cognome X 138, Y 105 | Nome X 130, Y 95
-    draw(patient.surname || "", 138, 105)
-    draw(patient.name    || "", 130, 95)
+    draw(`${patient.name || ""} ${patient.surname || ""}`, 130, 105)
 
     // Firme: posizionamento basato sul modulo visivo
     const sw = 100, sh = 25
-    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 550, y: 395, width: sw, height: sh }) // Firma paziente
-    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 550, y: 335, width: sw, height: sh }) // Firma medico
+    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 380, y: 370, width: sw, height: sh }) // Firma paziente
+    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 380, y: 310, width: sw, height: sh }) // Firma medico
     // Firma finale in fondo alla pagina
-    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 340, y: 125, width: sw, height: sh })
+    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 380, y: 110, width: sw, height: sh })
   }
 
 
