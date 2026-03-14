@@ -276,13 +276,38 @@ export default function DocumentsPage() {
     }
   }
 
+
+  async function fillChirurgiaAmbulatoriale(
+    pdfDoc: PDFDocument, patient: any,
+    docB: ArrayBuffer | null
+  ) {
+    const pages = pdfDoc.getPages()
+    const font = await pdfDoc.embedStandardFont(StandardFonts.HelveticaBold)
+    const fs = 11
+    const black = rgb(0, 0, 0)
+    const p1 = pages[0]
+    const { height: H } = p1.getSize()
+
+    // Nome e Cognome del paziente
+    if (patient) {
+      p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, {
+        x: 130, y: H - 100, size: fs, font, color: black
+      })
+    }
+
+    // Firma Medico in basso
+    const sw = 100, sh = 18
+    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 400, y: 115, width: sw, height: sh })
+  }
+
   async function saveSignedDoc() {
     if (!selectedModulo || !patient) return
     const isCartellaClinica = selectedModulo.id === 1
     const isRicetta = selectedModulo.id === 5
     const isTabella = selectedModulo.id === 6
+    const isChirurgia = selectedModulo.id === 7
     if (!isCartellaClinica && !isTabella) {
-      if (!isRicetta && patientSigRef.current?.isEmpty()) return alert("❌ Firma del paziente obbligatoria")
+      if (!isRicetta && !isChirurgia && patientSigRef.current?.isEmpty()) return alert("❌ Firma del paziente obbligatoria")
       if (doctorSigRef.current?.isEmpty()) return alert("❌ Firma del medico obbligatoria")
     }
     setSaving(true)
@@ -293,8 +318,8 @@ export default function DocumentsPage() {
       const patB = await sigToBytes(patientSigRef)
       const docB = await sigToBytes(doctorSigRef)
       const anestB = await sigToBytes(anestesistaRef)
-      if (!isCartellaClinica && !isRicetta && !isTabella && (!patB || !docB)) throw new Error("Firme mancanti")
-      if (isRicetta && !docB) throw new Error("Firma medico mancante")
+      if (!isCartellaClinica && !isRicetta && !isTabella && !isChirurgia && (!patB || !docB)) throw new Error("Firme mancanti")
+      if ((isRicetta || isChirurgia) && !docB) throw new Error("Firma medico mancante")
 
       if (selectedModulo.id === 0) {
         await fillSchedaAnagrafica(pdfDoc, patient, patB, docB)
@@ -308,6 +333,8 @@ export default function DocumentsPage() {
         await fillRicettaPrescrizioni(pdfDoc, patient, docB)
       } else if (selectedModulo.id === 6) {
         await fillTabellaMedicazioni(pdfDoc, patient)
+      } else if (selectedModulo.id === 7) {
+        await fillChirurgiaAmbulatoriale(pdfDoc, patient, docB)
       } else {
         await fillGenericPDF(pdfDoc, patient, patB, docB)
       }
