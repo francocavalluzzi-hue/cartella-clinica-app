@@ -291,7 +291,7 @@ export default function DocumentsPage() {
     // Nome e Cognome del paziente
     if (patient) {
       p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, {
-        x: 145, y: H - 188, size: fs, font, color: black
+        x: 147, y: H - 189, size: fs, font, color: black
       })
     }
 
