@@ -21,7 +21,8 @@ const MODULI = [
 
 async function sigToBytes(sigRef: any): Promise<ArrayBuffer | null> {
   if (!sigRef.current || sigRef.current.isEmpty()) return null
-  return fetch(sigRef.current.toDataURL("image/png")).then(r => r.arrayBuffer())
+  const trimmedCanvas = sigRef.current.getTrimmedCanvas()
+  return fetch(trimmedCanvas.toDataURL("image/png")).then(r => r.arrayBuffer())
 }
 
 async function embedSig(pdfDoc: PDFDocument, bytes: ArrayBuffer) {
@@ -364,8 +365,7 @@ export default function DocumentsPage() {
                       </div>
                       <div style={{ background: "white", borderRadius: 10, border: "2px solid #38bdf8", overflow: "hidden" }}>
                         <SignatureCanvas ref={ref}
-                          canvasProps={{ style: { width: "100%", height: "65px", display: "block" } }}
-                          backgroundColor="white" />
+                          canvasProps={{ style: { width: "100%", height: "65px", display: "block" } }} />
                       </div>
                       <button onClick={() => ref.current?.clear()}
                         style={{ marginTop: 8, background: "#374151", color: "#94a3b8", border: "none", borderRadius: 6, padding: "6px 14px", fontSize: 12, cursor: "pointer" }}>
