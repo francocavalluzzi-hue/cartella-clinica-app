@@ -204,7 +204,7 @@ export default function DocumentsPage() {
     // Ultima Pagina: Firme
     const lp = pages[pages.length - 1]
     const { width: lw } = lp.getSize()
-    const sw = 130, sh = 35
+    const sw = 100, sh = 25
 
     // Alzate le firme per allinearle alle righe del PDF
     if (patB) lp.drawImage(await embedSig(pdfDoc, patB), { x: 130, y: 346, width: sw, height: sh })
