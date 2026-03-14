@@ -158,10 +158,10 @@ export default function DocumentsPage() {
 
     // Firme pagina 1
     const sw = 100, sh = 25
-    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 350, y: 407, width: sw, height: sh }) // Firma paziente
+    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 350, y: 402, width: sw, height: sh }) // Firma paziente
     if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 350, y: 359, width: sw, height: sh }) // Firma medico
     // Firma finale in fondo alla pagina 1
-    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 380, y: 110, width: sw, height: sh })
+    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 300, y: 110, width: sw, height: sh })
 
     // Firme pagina 2: "Firma Paziente" e "Firma Anestesista"
     if (pages.length >= 2) {
@@ -169,8 +169,8 @@ export default function DocumentsPage() {
       const { height: H2 } = p2.getSize()
       const sw2 = 110, sh2 = 20
       // Riga "Firma Paziente / Firma Anestesista" — alzate rispetto al footer
-      if (patB) p2.drawImage(await embedSig(pdfDoc, patB), { x: 65, y: 115, width: sw2, height: sh2 })       // Firma Paziente p2
-      if (anestB) p2.drawImage(await embedSig(pdfDoc, anestB), { x: 340, y: 115, width: sw2, height: sh2 }) // Firma Anestesista p2
+      if (patB) p2.drawImage(await embedSig(pdfDoc, patB), { x: 75, y: 120, width: sw2, height: sh2 })       // Firma Paziente p2
+      if (anestB) p2.drawImage(await embedSig(pdfDoc, anestB), { x: 350, y: 120, width: sw2, height: sh2 }) // Firma Anestesista p2
     }
 
     // Pagina 3: "CONSENSO INFORMATO ALL'ANESTESIA" — campo "Io sottoscritto"
