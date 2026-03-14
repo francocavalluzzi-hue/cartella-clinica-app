@@ -225,7 +225,7 @@ export default function DocumentsPage() {
     // Nome e Cognome su riga "Sig./La Sig.ra"
     if (patient) {
       p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, {
-        x: 290, y: H - 135, size: fs, font, color: black
+        x: 290, y: H - 133, size: fs, font, color: black
       })
     }
 
