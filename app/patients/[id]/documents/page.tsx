@@ -38,6 +38,7 @@ export default function DocumentsPage() {
   const [saving, setSaving] = useState(false)
   const patientSigRef = useRef<any>(null)
   const doctorSigRef = useRef<any>(null)
+  const anestesistaRef = useRef<any>(null)
 
   useEffect(() => { if (id) { loadPatient(); loadSignedDocs() } }, [id])
 
@@ -138,7 +139,8 @@ export default function DocumentsPage() {
 
   async function fillConsensoAnestesia(
     pdfDoc: PDFDocument, patient: any,
-    patB: ArrayBuffer | null, docB: ArrayBuffer | null
+    patB: ArrayBuffer | null, docB: ArrayBuffer | null,
+    anestB: ArrayBuffer | null
   ) {
     const pages = pdfDoc.getPages()
     const font = await pdfDoc.embedStandardFont(StandardFonts.HelveticaBold)
@@ -151,15 +153,23 @@ export default function DocumentsPage() {
       if (text) p1.drawText(text, { x, y: H - y_top - 0.5, size: fs, font, color: black })
     }
 
-    // Coordinate fornite dall'utente: Cognome X 138, Y 105 | Nome X 130, Y 95
+    // Nome e Cognome
     draw(`${patient.name || ""} ${patient.surname || ""}`, 130, 105)
 
-    // Firme: posizionamento basato sul modulo visivo
+    // Firme pagina 1
     const sw = 100, sh = 25
     if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 350, y: 407, width: sw, height: sh }) // Firma paziente
     if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 350, y: 359, width: sw, height: sh }) // Firma medico
-    // Firma finale in fondo alla pagina
+    // Firma finale in fondo alla pagina 1
     if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 380, y: 110, width: sw, height: sh })
+
+    // Firme pagina 2: "Firma Paziente" e "Firma Anestesista"
+    if (pages.length >= 2) {
+      const p2 = pages[1]
+      const sw2 = 110, sh2 = 20
+      if (patB) p2.drawImage(await embedSig(pdfDoc, patB), { x: 65, y: 55, width: sw2, height: sh2 })       // Firma Paziente p2
+      if (anestB) p2.drawImage(await embedSig(pdfDoc, anestB), { x: 340, y: 55, width: sw2, height: sh2 }) // Firma Anestesista p2
+    }
   }
 
 
@@ -193,13 +203,14 @@ export default function DocumentsPage() {
       const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true })
       const patB = await sigToBytes(patientSigRef)
       const docB = await sigToBytes(doctorSigRef)
+      const anestB = await sigToBytes(anestesistaRef)
       if (!isCartellaClinica && (!patB || !docB)) throw new Error("Firme mancanti")
       if (selectedModulo.id === 0) {
         await fillSchedaAnagrafica(pdfDoc, patient, patB, docB)
       } else if (selectedModulo.id === 1) {
         await fillCartellaClinica(pdfDoc, patient, patB, docB)
       } else if (selectedModulo.id === 2) {
-        await fillConsensoAnestesia(pdfDoc, patient, patB, docB)
+        await fillConsensoAnestesia(pdfDoc, patient, patB, docB, anestB)
       } else {
         await fillGenericPDF(pdfDoc, patient, patB, docB)
       }
@@ -214,6 +225,7 @@ export default function DocumentsPage() {
       setSignedDocs(prev => [...prev, selectedModulo.id])
       patientSigRef.current?.clear()
       doctorSigRef.current?.clear()
+      anestesistaRef.current?.clear()
       alert(`✅ ${selectedModulo.nome} firmato e scaricato!`)
     } catch (err: any) {
       console.error(err)
@@ -333,9 +345,10 @@ export default function DocumentsPage() {
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
                   {[
-                    { label: "Firma Paziente", ref: patientSigRef },
-                    { label: "Firma Medico", ref: doctorSigRef },
-                  ].map(({ label, ref }) => (
+                    { label: "Firma Paziente", ref: patientSigRef, show: true },
+                    { label: "Firma Medico", ref: doctorSigRef, show: true },
+                    { label: "Firma Anestesista", ref: anestesistaRef, show: selectedModulo?.id === 2 },
+                  ].filter(s => s.show).map(({ label, ref }) => (
                     <div key={label}>
                       <div style={{ color: "#e2e8f0", fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
                         🖊️ {label} {selectedModulo?.id !== 1 && <span style={{ color: "#ef4444" }}>*</span>}
