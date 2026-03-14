@@ -169,8 +169,8 @@ export default function DocumentsPage() {
       const { height: H2 } = p2.getSize()
       const sw2 = 110, sh2 = 20
       // Riga "Firma Paziente / Firma Anestesista" — alzate rispetto al footer
-      if (patB) p2.drawImage(await embedSig(pdfDoc, patB), { x: 75, y: 120, width: sw2, height: sh2 })       // Firma Paziente p2
-      if (anestB) p2.drawImage(await embedSig(pdfDoc, anestB), { x: 350, y: 120, width: sw2, height: sh2 }) // Firma Anestesista p2
+      if (patB) p2.drawImage(await embedSig(pdfDoc, patB), { x: 115, y: 125, width: sw2, height: sh2 })       // Firma Paziente p2
+      if (anestB) p2.drawImage(await embedSig(pdfDoc, anestB), { x: 365, y: 125, width: sw2, height: sh2 }) // Firma Anestesista p2
     }
 
     // Pagina 3: "CONSENSO INFORMATO ALL'ANESTESIA" — campo "Io sottoscritto"
@@ -367,7 +367,7 @@ export default function DocumentsPage() {
                       </div>
                       <div style={{ background: "white", borderRadius: 10, border: "2px solid #38bdf8", overflow: "hidden" }}>
                         <SignatureCanvas ref={ref}
-                          canvasProps={{ style: { width: "100%", height: "100px", display: "block" } }}
+                          canvasProps={{ style: { width: "100%", height: "65px", display: "block" } }}
                           backgroundColor="white" />
                       </div>
                       <button onClick={() => ref.current?.clear()}
