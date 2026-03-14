@@ -271,7 +271,7 @@ export default function DocumentsPage() {
     // Nome e Cognome sulla riga "Paziente"
     if (patient) {
       p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, {
-        x: 135, y: H - 80, size: fs, font, color: black
+        x: 132, y: H - 90, size: fs, font, color: black
       })
     }
   }
