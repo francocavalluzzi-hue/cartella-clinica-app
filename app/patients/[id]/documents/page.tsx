@@ -182,7 +182,6 @@ export default function DocumentsPage() {
     }
   }
 
-
   async function fillGenericPDF(
     pdfDoc: PDFDocument, patient: any,
     patB: ArrayBuffer | null, docB: ArrayBuffer | null
@@ -211,6 +210,31 @@ export default function DocumentsPage() {
     if (docB) lp.drawImage(await embedSig(pdfDoc, docB), { x: 130, y: 303, width: sw, height: sh })
   }
 
+
+  async function fillLetteraDimissioni(
+    pdfDoc: PDFDocument, patient: any,
+    patB: ArrayBuffer | null, docB: ArrayBuffer | null
+  ) {
+    const pages = pdfDoc.getPages()
+    const font = await pdfDoc.embedStandardFont(StandardFonts.HelveticaBold)
+    const fs = 11
+    const black = rgb(0, 0, 0)
+    const p1 = pages[0]
+    const { height: H } = p1.getSize()
+
+    // Nome e Cognome su riga "Sig./La Sig.ra"
+    if (patient) {
+      p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, {
+        x: 230, y: H - 175, size: fs, font, color: black
+      })
+    }
+
+    // Firme in basso
+    const sw = 100, sh = 18
+    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 80, y: 135, width: sw, height: sh })
+    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 350, y: 135, width: sw, height: sh })
+  }
+
   async function saveSignedDoc() {
     if (!selectedModulo || !patient) return
     const isCartellaClinica = selectedModulo.id === 1
@@ -227,12 +251,15 @@ export default function DocumentsPage() {
       const docB = await sigToBytes(doctorSigRef)
       const anestB = await sigToBytes(anestesistaRef)
       if (!isCartellaClinica && (!patB || !docB)) throw new Error("Firme mancanti")
+      
       if (selectedModulo.id === 0) {
         await fillSchedaAnagrafica(pdfDoc, patient, patB, docB)
       } else if (selectedModulo.id === 1) {
         await fillCartellaClinica(pdfDoc, patient, patB, docB)
       } else if (selectedModulo.id === 2) {
         await fillConsensoAnestesia(pdfDoc, patient, patB, docB, anestB)
+      } else if (selectedModulo.id === 4) {
+        await fillLetteraDimissioni(pdfDoc, patient, patB, docB)
       } else {
         await fillGenericPDF(pdfDoc, patient, patB, docB)
       }
