@@ -155,7 +155,7 @@ export default function DocumentsPage() {
     }
 
     // Nome e Cognome
-    draw(`${patient.name || ""} ${patient.surname || ""}`, 130, 107)
+    draw(`${patient.name || ""} ${patient.surname || ""}`, 130, 105)
 
     // Firme pagina 1
     const sw = 100, sh = 25
@@ -173,7 +173,7 @@ export default function DocumentsPage() {
       const drawP2 = (text: string, x: number, y_top: number) => {
         if (text) p2.drawText(text, { x, y: H2 - y_top - 0.5, size: fs, font, color: black })
       }
-      drawP2(`${patient.name || ""} ${patient.surname || ""}`, 120, 90) // "Io sottoscritto ___"
+      drawP2(`${patient.name || ""} ${patient.surname || ""}`, 120, 92) // "Io sottoscritto ___"
 
       // Firme in basso: "Firma Paziente" e "Firma Anestesista"
       const sw2 = 110, sh2 = 20
