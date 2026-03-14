@@ -158,7 +158,7 @@ export default function DocumentsPage() {
     draw(`${patient.name || ""} ${patient.surname || ""}`, 130, 105)
 
     // Firme pagina 1
-    const sw = 100, sh = 25
+    const sw = 80, sh = 18
     if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 350, y: 402, width: sw, height: sh }) // Firma paziente
     if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 350, y: 359, width: sw, height: sh }) // Firma medico
     // Firma finale in fondo alla pagina 1
@@ -176,7 +176,7 @@ export default function DocumentsPage() {
       drawP2(`${patient.name || ""} ${patient.surname || ""}`, 120, 92) // "Io sottoscritto ___"
 
       // Firme in basso: "Firma Paziente" e "Firma Anestesista"
-      const sw2 = 110, sh2 = 20
+      const sw2 = 90, sh2 = 16
       if (patB) p2.drawImage(await embedSig(pdfDoc, patB), { x: 129, y: 124, width: sw2, height: sh2 })       // Firma Paziente p2
       if (anestB) p2.drawImage(await embedSig(pdfDoc, anestB), { x: 370, y: 124, width: sw2, height: sh2 }) // Firma Anestesista p2
     }
@@ -188,7 +188,7 @@ export default function DocumentsPage() {
     patB: ArrayBuffer | null, docB: ArrayBuffer | null
   ) {
     const pages = pdfDoc.getPages()
-    const font = await pdfDoc.embedStandardFont(StandardFonts.Helvetica)
+    const font = await pdfDoc.embedStandardFont(StandardFonts.HelveticaBold)
     const fs = 10
     const black = rgb(0, 0, 0)
 
@@ -204,7 +204,7 @@ export default function DocumentsPage() {
     // Ultima Pagina: Firme
     const lp = pages[pages.length - 1]
     const { width: lw } = lp.getSize()
-    const sw = 100, sh = 25
+    const sw = 80, sh = 18
 
     // Alzate le firme per allinearle alle righe del PDF
     if (patB) lp.drawImage(await embedSig(pdfDoc, patB), { x: 130, y: 346, width: sw, height: sh })
@@ -377,7 +377,7 @@ export default function DocumentsPage() {
                       </div>
                       <div style={{ background: "white", borderRadius: 10, border: "2px solid #38bdf8", overflow: "hidden" }}>
                         <SignatureCanvas ref={ref}
-                          canvasProps={{ style: { width: "100%", height: "65px", display: "block" } }} />
+                          canvasProps={{ style: { width: "100%", height: "50px", display: "block" } }} />
                       </div>
                       <button onClick={() => ref.current?.clear()}
                         style={{ marginTop: 8, background: "#374151", color: "#94a3b8", border: "none", borderRadius: 6, padding: "6px 14px", fontSize: 12, cursor: "pointer" }}>
