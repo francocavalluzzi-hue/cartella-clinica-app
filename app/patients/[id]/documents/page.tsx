@@ -177,8 +177,8 @@ export default function DocumentsPage() {
 
       // Firme in basso: "Firma Paziente" e "Firma Anestesista"
       const sw2 = 110, sh2 = 20
-      if (patB) p2.drawImage(await embedSig(pdfDoc, patB), { x: 115, y: 128, width: sw2, height: sh2 })       // Firma Paziente p2
-      if (anestB) p2.drawImage(await embedSig(pdfDoc, anestB), { x: 365, y: 128, width: sw2, height: sh2 }) // Firma Anestesista p2
+      if (patB) p2.drawImage(await embedSig(pdfDoc, patB), { x: 120, y: 126, width: sw2, height: sh2 })       // Firma Paziente p2
+      if (anestB) p2.drawImage(await embedSig(pdfDoc, anestB), { x: 370, y: 126, width: sw2, height: sh2 }) // Firma Anestesista p2
     }
   }
 
