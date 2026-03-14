@@ -339,18 +339,45 @@ export default function DocumentsPage() {
         await fillGenericPDF(pdfDoc, patient, patB, docB)
       }
       const out = await pdfDoc.save()
+      
+      // Upload su Supabase Storage
+      const fileName = `firme/${id}/${selectedModulo.id}_${Date.now()}.pdf`
+      const { error: uploadError } = await supabase.storage
+        .from("FIRME_PAZIENTI")
+        .upload(fileName, out, {
+          contentType: "application/pdf",
+          upsert: true
+        })
+      
+      if (uploadError) throw new Error("Errore upload PDF: " + uploadError.message)
+
+      // Ottieni URL pubblico
+      const { data: { publicUrl } } = supabase.storage
+        .from("FIRME_PAZIENTI")
+        .getPublicUrl(fileName)
+
+      // Download locale per comodità
       const url = URL.createObjectURL(new Blob([out] as any, { type: "application/pdf" }))
       Object.assign(document.createElement("a"), {
         href: url,
         download: `${selectedModulo.nome}-${patient.surname}-${patient.name}-firmato.pdf`
       }).click()
       URL.revokeObjectURL(url)
-      await supabase.from("documents").insert([{ patient_id: id, document_type: selectedModulo.id, file_url: pdfUrl }])
+
+      // Salva nel database con il link al file firmato
+      await supabase.from("documents").insert([
+        { 
+          patient_id: id, 
+          document_type: selectedModulo.id, 
+          file_url: publicUrl 
+        }
+      ])
+      
       setSignedDocs(prev => [...prev, selectedModulo.id])
       patientSigRef.current?.clear()
       doctorSigRef.current?.clear()
       anestesistaRef.current?.clear()
-      alert(`✅ ${selectedModulo.nome} firmato e scaricato!`)
+      alert(`✅ ${selectedModulo.nome} firmato e salvato su Cloud!`)
     } catch (err: any) {
       console.error(err)
       alert("❌ Errore: " + err.message)
