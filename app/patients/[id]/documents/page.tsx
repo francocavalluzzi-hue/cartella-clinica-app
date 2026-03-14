@@ -35,7 +35,7 @@ export default function DocumentsPage() {
   const router = useRouter()
   const [patient, setPatient] = useState<any>(null)
   const [selectedModulo, setSelectedModulo] = useState<any>(null)
-  const [signedDocs, setSignedDocs] = useState<number[]>([])
+  const [signedDocs, setSignedDocs] = useState<{type: number, url: string}[]>([])
   const [saving, setSaving] = useState(false)
   const patientSigRef = useRef<any>(null)
   const doctorSigRef = useRef<any>(null)
@@ -50,7 +50,7 @@ export default function DocumentsPage() {
 
   async function loadSignedDocs() {
     const { data } = await supabase.from("documents").select("*").eq("patient_id", id)
-    setSignedDocs((data || []).map((d: any) => d.document_type))
+    setSignedDocs((data || []).map((d: any) => ({ type: d.document_type, url: d.file_url })))
   }
 
   async function fillSchedaAnagrafica(
@@ -373,7 +373,7 @@ export default function DocumentsPage() {
         }
       ])
       
-      setSignedDocs(prev => [...prev, selectedModulo.id])
+      setSignedDocs(prev => [...prev, { type: selectedModulo.id, url: publicUrl }])
       patientSigRef.current?.clear()
       doctorSigRef.current?.clear()
       anestesistaRef.current?.clear()
@@ -433,8 +433,8 @@ export default function DocumentsPage() {
                     <div style={{ fontSize: 10, color: "#64748b", marginTop: 1 }}>{m.quando}</div>
                   </div>
                 </div>
-                {signedDocs.includes(m.id) && (
-                  <span style={{ background: "#14532d", color: "#86efac", padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700 }}>✓</span>
+                {signedDocs.some(s => s.type === m.id) && (
+                  <span style={{ background: "#14532d", color: "#86efac", padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700 }}>✓ FIRMATO</span>
                 )}
               </div>
             </div>
@@ -453,10 +453,18 @@ export default function DocumentsPage() {
 
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                 <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>{selectedModulo.icon} {selectedModulo.nome}</h2>
-                <a href={`${BUCKET_URL}/${selectedModulo.file}`} target="_blank"
-                  style={{ background: "#334155", color: "#94a3b8", padding: "8px 16px", borderRadius: 8, fontSize: 12, textDecoration: "none" }}>
-                  🔍 Vedi originale
-                </a>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <a href={`${BUCKET_URL}/${selectedModulo.file}`} target="_blank"
+                    style={{ background: "#334155", color: "#94a3b8", padding: "8px 16px", borderRadius: 8, fontSize: 12, textDecoration: "none" }}>
+                    🔍 Vedi originale
+                  </a>
+                  {signedDocs.find(s => s.type === selectedModulo.id) && (
+                    <a href={signedDocs.find(s => s.type === selectedModulo.id)?.url} target="_blank"
+                      style={{ background: "#15803d", color: "white", padding: "8px 16px", borderRadius: 8, fontSize: 12, textDecoration: "none", fontWeight: 700 }}>
+                      📥 Scarica Firmato
+                    </a>
+                  )}
+                </div>
               </div>
 
               <div style={{ background: "#1e293b", borderRadius: 12, padding: 16, marginBottom: 20, border: "1px solid #334155" }}>
