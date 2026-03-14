@@ -225,7 +225,7 @@ export default function DocumentsPage() {
     // Nome e Cognome su riga "Sig./La Sig.ra"
     if (patient) {
       p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, {
-        x: 290, y: H - 138, size: fs, font, color: black
+        x: 280, y: H - 138, size: fs, font, color: black
       })
     }
 
@@ -235,11 +235,35 @@ export default function DocumentsPage() {
     if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 388, y: 163, width: sw, height: sh })
   }
 
+  async function fillRicettaPrescrizioni(
+    pdfDoc: PDFDocument, patient: any,
+    docB: ArrayBuffer | null
+  ) {
+    const pages = pdfDoc.getPages()
+    const font = await pdfDoc.embedStandardFont(StandardFonts.HelveticaBold)
+    const fs = 10
+    const black = rgb(0, 0, 0)
+    const p1 = pages[0]
+    const { height: H } = p1.getSize()
+
+    // Nome e Cognome del paziente (stima posizione)
+    if (patient) {
+      p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, {
+        x: 400, y: H - 78, size: fs, font, color: black
+      })
+    }
+
+    // Firma Medico in basso a destra
+    const sw = 100, sh = 18
+    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 420, y: 125, width: sw, height: sh })
+  }
+
   async function saveSignedDoc() {
     if (!selectedModulo || !patient) return
     const isCartellaClinica = selectedModulo.id === 1
+    const isRicetta = selectedModulo.id === 5
     if (!isCartellaClinica) {
-      if (patientSigRef.current?.isEmpty()) return alert("❌ Firma del paziente obbligatoria")
+      if (!isRicetta && patientSigRef.current?.isEmpty()) return alert("❌ Firma del paziente obbligatoria")
       if (doctorSigRef.current?.isEmpty()) return alert("❌ Firma del medico obbligatoria")
     }
     setSaving(true)
@@ -250,7 +274,8 @@ export default function DocumentsPage() {
       const patB = await sigToBytes(patientSigRef)
       const docB = await sigToBytes(doctorSigRef)
       const anestB = await sigToBytes(anestesistaRef)
-      if (!isCartellaClinica && (!patB || !docB)) throw new Error("Firme mancanti")
+      if (!isCartellaClinica && !isRicetta && (!patB || !docB)) throw new Error("Firme mancanti")
+      if (isRicetta && !docB) throw new Error("Firma medico mancante")
 
       if (selectedModulo.id === 0) {
         await fillSchedaAnagrafica(pdfDoc, patient, patB, docB)
@@ -260,6 +285,8 @@ export default function DocumentsPage() {
         await fillConsensoAnestesia(pdfDoc, patient, patB, docB, anestB)
       } else if (selectedModulo.id === 4) {
         await fillLetteraDimissioni(pdfDoc, patient, patB, docB)
+      } else if (selectedModulo.id === 5) {
+        await fillRicettaPrescrizioni(pdfDoc, patient, docB)
       } else {
         await fillGenericPDF(pdfDoc, patient, patB, docB)
       }
