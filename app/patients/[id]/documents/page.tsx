@@ -257,7 +257,7 @@ export default function DocumentsPage() {
     const sw = 100, sh = 18
     if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 400, y: 115, width: sw, height: sh })
   }
-  
+
   async function fillTabellaMedicazioni(
     pdfDoc: PDFDocument, patient: any
   ) {
@@ -271,7 +271,7 @@ export default function DocumentsPage() {
     // Nome e Cognome sulla riga "Paziente"
     if (patient) {
       p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, {
-        x: 100, y: H - 250, size: fs, font, color: black
+        x: 140, y: H - 150, size: fs, font, color: black
       })
     }
   }
