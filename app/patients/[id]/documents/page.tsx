@@ -173,12 +173,12 @@ export default function DocumentsPage() {
       const drawP2 = (text: string, x: number, y_top: number) => {
         if (text) p2.drawText(text, { x, y: H2 - y_top - 0.5, size: fs, font, color: black })
       }
-      drawP2(`${patient.name || ""} ${patient.surname || ""}`, 110, 103) // "Io sottoscritto ___"
+      drawP2(`${patient.name || ""} ${patient.surname || ""}`, 120, 88) // "Io sottoscritto ___"
 
       // Firme in basso: "Firma Paziente" e "Firma Anestesista"
       const sw2 = 110, sh2 = 20
-      if (patB) p2.drawImage(await embedSig(pdfDoc, patB), { x: 115, y: 120, width: sw2, height: sh2 })       // Firma Paziente p2
-      if (anestB) p2.drawImage(await embedSig(pdfDoc, anestB), { x: 365, y: 120, width: sw2, height: sh2 }) // Firma Anestesista p2
+      if (patB) p2.drawImage(await embedSig(pdfDoc, patB), { x: 115, y: 128, width: sw2, height: sh2 })       // Firma Paziente p2
+      if (anestB) p2.drawImage(await embedSig(pdfDoc, anestB), { x: 365, y: 128, width: sw2, height: sh2 }) // Firma Anestesista p2
     }
   }
 
