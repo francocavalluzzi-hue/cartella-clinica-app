@@ -163,24 +163,21 @@ export default function DocumentsPage() {
     // Firma finale in fondo alla pagina 1
     if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 300, y: 110, width: sw, height: sh })
 
-    // Firme pagina 2: "Firma Paziente" e "Firma Anestesista"
+    // Pagina 2: "CONSENSO INFORMATO ALL'ANESTESIA"
     if (pages.length >= 2) {
       const p2 = pages[1]
       const { height: H2 } = p2.getSize()
-      const sw2 = 110, sh2 = 20
-      // Riga "Firma Paziente / Firma Anestesista" — alzate rispetto al footer
-      if (patB) p2.drawImage(await embedSig(pdfDoc, patB), { x: 115, y: 125, width: sw2, height: sh2 })       // Firma Paziente p2
-      if (anestB) p2.drawImage(await embedSig(pdfDoc, anestB), { x: 365, y: 125, width: sw2, height: sh2 }) // Firma Anestesista p2
-    }
 
-    // Pagina 3: "CONSENSO INFORMATO ALL'ANESTESIA" — campo "Io sottoscritto"
-    if (pages.length >= 3) {
-      const p3 = pages[2]
-      const { height: H3 } = p3.getSize()
-      const drawP3 = (text: string, x: number, y_top: number) => {
-        if (text) p3.drawText(text, { x, y: H3 - y_top - 0.5, size: fs, font, color: black })
+      // Nome e Cognome in "Io sottoscritto___"
+      const drawP2 = (text: string, x: number, y_top: number) => {
+        if (text) p2.drawText(text, { x, y: H2 - y_top - 0.5, size: fs, font, color: black })
       }
-      drawP3(`${patient.name || ""} ${patient.surname || ""}`, 110, 118) // "Io sottoscritto ___"
+      drawP2(`${patient.name || ""} ${patient.surname || ""}`, 110, 118) // "Io sottoscritto ___"
+
+      // Firme in basso: "Firma Paziente" e "Firma Anestesista"
+      const sw2 = 110, sh2 = 20
+      if (patB) p2.drawImage(await embedSig(pdfDoc, patB), { x: 115, y: 120, width: sw2, height: sh2 })       // Firma Paziente p2
+      if (anestB) p2.drawImage(await embedSig(pdfDoc, anestB), { x: 365, y: 120, width: sw2, height: sh2 }) // Firma Anestesista p2
     }
   }
 
