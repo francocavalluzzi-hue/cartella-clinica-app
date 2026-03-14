@@ -1,6 +1,74 @@
 @import "tailwindcss";
 
 :root {
+  /* Cosmedic Palette */
+  --primary: #0d9488;
+  --primary-hover: #0f766e;
+  --primary-light: #f0fdfa;
+  
+  --sidebar-bg: #111827;
+  --sidebar-text: #9ca3af;
+  --sidebar-active: #ffffff;
+  --sidebar-hover: #1f2937;
+  
+  --content-bg: #f9fafb;
+  --card-bg: #ffffff;
+  --border: #e5e7eb;
+  
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-geist-sans), sans-serif;
+  background-color: var(--content-bg);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+button {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+/* Custom Utilities */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+:root {
   --background: #ffffff;
   --foreground: #171717;
 }

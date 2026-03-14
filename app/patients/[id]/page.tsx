@@ -4,6 +4,23 @@ import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "../../../lib/supabaseClient"
 import jsPDF from "jspdf"
+import { 
+  ArrowLeft, 
+  FileText, 
+  Plus, 
+  User, 
+  Calendar, 
+  Phone, 
+  Mail, 
+  MapPin, 
+  Fingerprint,
+  Stethoscope,
+  ClipboardList,
+  ChevronRight,
+  Download,
+  PenTool,
+  Edit3
+} from "lucide-react"
 
 export default function PatientPage() {
   const params = useParams()
@@ -62,22 +79,21 @@ export default function PatientPage() {
     const margin = 20
     let y = 20
 
-    doc.setFillColor(15, 23, 42)
+    doc.setFillColor(13, 148, 136) // Cosmedic Teal
     doc.rect(0, 0, pageW, 40, "F")
-    doc.setTextColor(56, 189, 248)
+    doc.setTextColor(255, 255, 255)
     doc.setFontSize(20)
     doc.setFont("helvetica", "bold")
     doc.text("CARTELLA CLINICA", margin, 18)
-    doc.setTextColor(148, 163, 184)
     doc.setFontSize(10)
     doc.setFont("helvetica", "normal")
-    doc.text("Dr. Franco Cavalluzzi — Chirurgia Estetica", margin, 28)
-    doc.text(`Data: ${new Date().toLocaleDateString("it-IT")}`, margin, 35)
+    doc.text("COSMEDIC — Gestione Clinica Intelligente", margin, 28)
+    doc.text(`Data Documento: ${new Date().toLocaleDateString("it-IT")}`, margin, 35)
     y = 55
 
-    doc.setFillColor(30, 41, 59)
+    doc.setFillColor(243, 244, 246)
     doc.rect(margin, y, pageW-margin*2, 8, "F")
-    doc.setTextColor(56, 189, 248)
+    doc.setTextColor(13, 148, 136)
     doc.setFontSize(11)
     doc.setFont("helvetica", "bold")
     doc.text("DATI ANAGRAFICI", margin+3, y+5.5)
@@ -87,31 +103,30 @@ export default function PatientPage() {
       ["Nome", patient.name], ["Cognome", patient.surname],
       ["Data di Nascita", patient.birthdate||"—"], ["Codice Fiscale", patient.fiscal_code||"—"],
       ["Telefono", patient.phone||"—"], ["Email", patient.email||"—"],
-      ["Indirizzo", patient.address||"—"],
-      ["Città", patient.city||"—"], ["CAP", patient.cap||"—"], ["Nazione", patient.country||"—"],
+      ["Indirizzo", patient.address||"—"], ["Città", patient.city||"—"],
     ]
     anagrafica.forEach(([label, value]) => {
-      doc.setFont("helvetica","bold"); doc.setTextColor(100,116,139); doc.setFontSize(10)
+      doc.setFont("helvetica","bold"); doc.setTextColor(107, 114, 128); doc.setFontSize(10)
       doc.text(label+":", margin, y)
-      doc.setFont("helvetica","normal"); doc.setTextColor(15,23,42)
+      doc.setFont("helvetica","normal"); doc.setTextColor(17, 24, 39)
       doc.text(value, margin+45, y); y += 7
     })
     y += 8
 
-    doc.setFillColor(30,41,59)
+    doc.setFillColor(243, 244, 246)
     doc.rect(margin, y, pageW-margin*2, 8, "F")
-    doc.setTextColor(56,189,248); doc.setFontSize(11); doc.setFont("helvetica","bold")
-    doc.text("INTERVENTI CHIRURGICI", margin+3, y+5.5); y += 14
+    doc.setTextColor(13, 148, 136); doc.setFontSize(11); doc.setFont("helvetica","bold")
+    doc.text("INTERVENTI REGISTRATI", margin+3, y+5.5); y += 14
 
     if (procedures.length === 0) {
-      doc.setTextColor(100,116,139); doc.setFontSize(10); doc.setFont("helvetica","italic")
+      doc.setTextColor(107, 114, 128); doc.setFontSize(10); doc.setFont("helvetica","italic")
       doc.text("Nessun intervento registrato", margin, y); y += 10
     } else {
       procedures.forEach((p) => {
-        doc.setFont("helvetica","bold"); doc.setTextColor(15,23,42); doc.setFontSize(10)
+        doc.setFont("helvetica","bold"); doc.setTextColor(17, 24, 39); doc.setFontSize(10)
         doc.text(`• ${p.procedure_type} — ${p.procedure_date}`, margin, y); y += 6
         if (p.notes) {
-          doc.setFont("helvetica","normal"); doc.setTextColor(100,116,139)
+          doc.setFont("helvetica","normal"); doc.setTextColor(107, 114, 128)
           doc.text(`  Note: ${p.notes}`, margin, y); y += 6
         }
         y += 2
@@ -119,37 +134,27 @@ export default function PatientPage() {
     }
     y += 8
 
-    doc.setFillColor(30,41,59)
+    doc.setFillColor(243, 244, 246)
     doc.rect(margin, y, pageW-margin*2, 8, "F")
-    doc.setTextColor(56,189,248); doc.setFontSize(11); doc.setFont("helvetica","bold")
-    doc.text("PRESCRIZIONI POST-OPERATORIE", margin+3, y+5.5); y += 14
-    doc.setTextColor(15,23,42); doc.setFontSize(10); doc.setFont("helvetica","normal")
-    doc.text("Farmaco: _________________________ Dose: _________ Frequenza: _________", margin, y); y += 7
-    doc.text("Farmaco: _________________________ Dose: _________ Frequenza: _________", margin, y); y += 7
-    y += 8
-
-    if (y > 230) { doc.addPage(); y = 20 }
-    doc.setFillColor(30,41,59)
-    doc.rect(margin, y, pageW-margin*2, 8, "F")
-    doc.setTextColor(56,189,248); doc.setFontSize(11); doc.setFont("helvetica","bold")
-    doc.text("FIRME", margin+3, y+5.5); y += 20
-    doc.setTextColor(15,23,42); doc.setFontSize(10); doc.setFont("helvetica","normal")
+    doc.setTextColor(13, 148, 136); doc.setFontSize(11); doc.setFont("helvetica","bold")
+    doc.text("FIRME DI VALIDAZIONE", margin+3, y+5.5); y += 20
+    doc.setTextColor(107, 114, 128); doc.setFontSize(10); doc.setFont("helvetica","normal")
     doc.line(margin, y, margin+70, y)
     doc.line(pageW-margin-70, y, pageW-margin, y); y += 5
-    doc.setTextColor(100,116,139)
     doc.text("Firma del Paziente", margin, y)
     doc.text("Firma del Medico", pageW-margin-60, y)
-    doc.setFillColor(15,23,42)
-    doc.rect(0, 282, pageW, 15, "F")
-    doc.setTextColor(148,163,184); doc.setFontSize(8)
-    doc.text(`Cartella Clinica — ${patient.name} ${patient.surname} — Generata il ${new Date().toLocaleDateString("it-IT")}`, margin, 290)
+
+    doc.setFillColor(17, 24, 39)
+    doc.rect(0, 285, pageW, 12, "F")
+    doc.setTextColor(156, 163, 175); doc.setFontSize(8)
+    doc.text(`Cosmedic SW — Paziente: ${patient.name} ${patient.surname} — Generata il ${new Date().toLocaleDateString("it-IT")}`, margin, 292)
 
     doc.save(`cartella-clinica-${patient.surname}-${patient.name}.pdf`)
     setGeneratingPdf(false)
   }
 
-  if (loading) return <div style={{background:"#0f172a", minHeight:"100vh", color:"white", padding:40}}>Caricamento...</div>
-  if (!patient) return <div style={{background:"#0f172a", minHeight:"100vh", color:"white", padding:40}}>Paziente non trovato</div>
+  if (loading) return <div style={{ padding: 40, color: "var(--text-muted)" }}>Caricamento...</div>
+  if (!patient) return <div style={{ padding: 40, color: "var(--danger)" }}>Paziente non trovato</div>
 
   const interventoTypes = [
     "Rinoplastica", "Blefaroplastica", "Lifting facciale", "Otoplastica",
@@ -160,163 +165,175 @@ export default function PatientPage() {
   ]
 
   return (
-    <div style={{minHeight:"100vh", background:"#0f172a", color:"white", fontFamily:"sans-serif"}}>
-      <div style={{background:"#1e293b", padding:"16px 32px", display:"flex", justifyContent:"space-between", alignItems:"center", borderBottom:"1px solid #334155"}}>
-        <div style={{display:"flex", alignItems:"center", gap:16}}>
-          <button onClick={() => router.push("/")}
-            style={{background:"#334155", color:"white", border:"none", borderRadius:8, padding:"8px 16px", cursor:"pointer", fontSize:14}}>
-            ← Dashboard
+    <div style={{ padding: "32px" }}>
+      {/* Header Info */}
+      <header style={{ 
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "flex-start", 
+        marginBottom: "32px" 
+      }}>
+        <div style={{ display: "flex", gap: "24px" }}>
+          <div style={{ 
+            width: "80px", 
+            height: "80px", 
+            borderRadius: "16px", 
+            background: "var(--primary)", 
+            color: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "32px",
+            fontWeight: 700,
+            boxShadow: "0 10px 15px -3px rgba(13, 148, 136, 0.2)"
+          }}>{patient.name[0]}{patient.surname[0]}</div>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+              <h1 style={{ fontSize: "28px" }}>{patient.name} {patient.surname}</h1>
+              <div style={{ 
+                background: "#f0fdf4", 
+                color: "#166534", 
+                padding: "2px 10px", 
+                borderRadius: "20px", 
+                fontSize: "12px", 
+                fontWeight: 600
+              }}>Paziente Attivo</div>
+            </div>
+            <div style={{ display: "flex", gap: "20px", color: "var(--text-muted)", fontSize: "14px" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Fingerprint size={16} /> {patient.fiscal_code || "N/A"}</span>
+              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Calendar size={16} /> {patient.birthdate || "N/A"}</span>
+              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><MapPin size={16} /> {patient.city || "N/A"}</span>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: "12px" }}>
+          <button onClick={generatePDF} disabled={generatingPdf} className="btn-primary" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Download size={18} />
+            {generatingPdf ? "Generazione..." : "Esporta PDF"}
           </button>
-          <h1 style={{margin:0, fontSize:20, fontWeight:700, color:"#38bdf8"}}>🏥 Cartella Clinica</h1>
+          <button onClick={() => router.push(`/patients/${id}/documents`)} className="btn-primary" style={{ background: "#7c3aed", display: "flex", alignItems: "center", gap: "8px" }}>
+            <PenTool size={18} />
+            Punto Firme
+          </button>
         </div>
-        <span style={{color:"#94a3b8", fontSize:14}}>Dr. Franco Cavalluzzi</span>
-      </div>
+      </header>
 
-      <div style={{padding:32}}>
-        <div style={{marginBottom:32}}>
-          <div style={{color:"#94a3b8", fontSize:13, marginBottom:4}}>Scheda Paziente</div>
-          <h2 style={{margin:0, fontSize:28, fontWeight:700}}>{patient.name} {patient.surname}</h2>
-        </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "32px" }}>
+        {/* Main Content: Procedures */}
+        <div>
+          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+             <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div style={{ width: "36px", height: "36px", background: "var(--primary-light)", color: "var(--primary)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Stethoscope size={20} />
+                  </div>
+                  <h2 style={{ fontSize: "16px" }}>Interventi e Procedure</h2>
+                </div>
+                {!showProcedureForm && (
+                  <button onClick={() => setShowProcedureForm(true)} style={{ color: "var(--primary)", background: "transparent", border: "none", fontWeight: 600, fontSize: "14px", display: "flex", alignItems: "center", gap: "4px" }}>
+                    <Plus size={18} /> Aggiungi
+                  </button>
+                )}
+             </div>
 
-        <div style={{background:"#1e293b", borderRadius:12, padding:24, marginBottom:24}}>
-          <h3 style={{margin:"0 0 20px", fontSize:15, fontWeight:600, color:"#38bdf8"}}>📋 Dati Anagrafici</h3>
-          <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20}}>
-            {[
-              {label:"Nome", value:patient.name}, {label:"Cognome", value:patient.surname},
-              {label:"Data di Nascita", value:patient.birthdate||"—"},
-              {label:"Codice Fiscale", value:patient.fiscal_code||"—"},
-              {label:"Telefono", value:patient.phone||"—"}, {label:"Email", value:patient.email||"—"},
-              {label:"Indirizzo", value:patient.address||"—"},
-              {label:"Città", value:patient.city||"—"}, {label:"CAP", value:patient.cap||"—"},
-              {label:"Nazione", value:patient.country||"—"},
-            ].map(f => (
-              <div key={f.label}>
-                <div style={{color:"#94a3b8", fontSize:12, marginBottom:4}}>{f.label}</div>
-                <div style={{fontSize:15, fontWeight:500}}>{f.value}</div>
-              </div>
-            ))}
+             {showProcedureForm && (
+               <div style={{ padding: "24px", background: "#f9fafb", borderBottom: "1px solid var(--border)" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "12px", fontWeight: 600, marginBottom: "8px" }}>Tipo Intervento</label>
+                      <select 
+                        value={procedureForm.procedure_type}
+                        onChange={e => setProcedureForm({...procedureForm, procedure_type:e.target.value})}
+                        style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border)" }}>
+                        <option value="">Seleziona...</option>
+                        {interventoTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: "12px", fontWeight: 600, marginBottom: "8px" }}>Data</label>
+                      <input type="date" 
+                        value={procedureForm.procedure_date}
+                        onChange={e => setProcedureForm({...procedureForm, procedure_date:e.target.value})}
+                        style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border)" }} />
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: "16px" }}>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 600, marginBottom: "8px" }}>Note Cliniche</label>
+                    <textarea 
+                      value={procedureForm.notes}
+                      onChange={e => setProcedureForm({...procedureForm, notes:e.target.value})}
+                      placeholder="Inserisci dettagli..."
+                      style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border)", minHeight: "80px" }} />
+                  </div>
+                  <div style={{ display: "flex", gap: "12px" }}>
+                    <button onClick={saveProcedure} className="btn-primary">Salva Intervento</button>
+                    <button onClick={() => setShowProcedureForm(false)} style={{ background: "transparent", border: "1px solid var(--border)", borderRadius: "8px", padding: "10px 20px", fontSize: "14px" }}>Annulla</button>
+                  </div>
+               </div>
+             )}
+
+             <div style={{ padding: "8px 0" }}>
+                {procedures.length === 0 ? (
+                  <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>Nessun intervento registrato per questo paziente.</div>
+                ) : (
+                  procedures.map((p) => (
+                    <div key={p.id} style={{ padding: "20px 24px", display: "flex", gap: "20px", borderBottom: "1px solid var(--border)" }}>
+                      <div style={{ width: "48px", height: "48px", borderRadius: "10px", background: "white", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
+                        <ClipboardList size={22} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                          <h4 style={{ fontSize: "15px" }}>{p.procedure_type}</h4>
+                          <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>{new Date(p.procedure_date).toLocaleDateString("it-IT")}</span>
+                        </div>
+                        <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.5" }}>{p.notes || "Nessuna nota aggiuntiva."}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+             </div>
           </div>
         </div>
 
-        {/* FORM INTERVENTO */}
-        {showProcedureForm && (
-          <div style={{background:"#1e293b", borderRadius:12, padding:24, marginBottom:24, border:"1px solid #38bdf8"}}>
-            <h3 style={{margin:"0 0 20px", fontSize:15, fontWeight:600, color:"#38bdf8"}}>🔪 Nuovo Intervento</h3>
-            <div style={{display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:16}}>
-              <div>
-                <label style={{display:"block", color:"#94a3b8", fontSize:13, marginBottom:6}}>Tipo Intervento *</label>
-                <select
-                  value={procedureForm.procedure_type}
-                  onChange={e => setProcedureForm({...procedureForm, procedure_type:e.target.value})}
-                  style={{width:"100%", background:"#0f172a", border:"1px solid #334155", borderRadius:8, padding:"10px 12px", color:"white", fontSize:14}}>
-                  <option value="">— Seleziona —</option>
-                  {interventoTypes.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={{display:"block", color:"#94a3b8", fontSize:13, marginBottom:6}}>Data Intervento *</label>
-                <input type="date"
-                  value={procedureForm.procedure_date}
-                  onChange={e => setProcedureForm({...procedureForm, procedure_date:e.target.value})}
-                  style={{width:"100%", background:"#0f172a", border:"1px solid #334155", borderRadius:8, padding:"10px 12px", color:"white", fontSize:14, boxSizing:"border-box"}}
-                />
-              </div>
-              <div>
-                <label style={{display:"block", color:"#94a3b8", fontSize:13, marginBottom:6}}>Tipo Anestesia</label>
-                <select
-                  value={procedureForm.anesthesia}
-                  onChange={e => setProcedureForm({...procedureForm, anesthesia:e.target.value})}
-                  style={{width:"100%", background:"#0f172a", border:"1px solid #334155", borderRadius:8, padding:"10px 12px", color:"white", fontSize:14}}>
-                  <option value="">— Seleziona —</option>
-                  <option>Locale</option>
-                  <option>Locale + Sedazione</option>
-                  <option>Generale</option>
-                </select>
-              </div>
-              <div>
-                <label style={{display:"block", color:"#94a3b8", fontSize:13, marginBottom:6}}>Durata (minuti)</label>
-                <input type="number"
-                  value={procedureForm.duration}
-                  onChange={e => setProcedureForm({...procedureForm, duration:e.target.value})}
-                  style={{width:"100%", background:"#0f172a", border:"1px solid #334155", borderRadius:8, padding:"10px 12px", color:"white", fontSize:14, boxSizing:"border-box"}}
-                />
-              </div>
-              <div style={{gridColumn:"span 2"}}>
-                <label style={{display:"block", color:"#94a3b8", fontSize:13, marginBottom:6}}>Note Operatorie</label>
-                <textarea
-                  value={procedureForm.notes}
-                  onChange={e => setProcedureForm({...procedureForm, notes:e.target.value})}
-                  rows={3}
-                  style={{width:"100%", background:"#0f172a", border:"1px solid #334155", borderRadius:8, padding:"10px 12px", color:"white", fontSize:14, boxSizing:"border-box", resize:"vertical"}}
-                />
-              </div>
-              <div style={{gridColumn:"span 2"}}>
-                <label style={{display:"block", color:"#94a3b8", fontSize:13, marginBottom:6}}>Complicanze</label>
-                <input type="text"
-                  value={procedureForm.complications}
-                  onChange={e => setProcedureForm({...procedureForm, complications:e.target.value})}
-                  placeholder="Nessuna"
-                  style={{width:"100%", background:"#0f172a", border:"1px solid #334155", borderRadius:8, padding:"10px 12px", color:"white", fontSize:14, boxSizing:"border-box"}}
-                />
-              </div>
-            </div>
-            <div style={{marginTop:20, display:"flex", gap:12}}>
-              <button onClick={saveProcedure} disabled={savingProcedure}
-                style={{background:"#38bdf8", color:"#0f172a", border:"none", borderRadius:8, padding:"10px 24px", fontWeight:700, cursor:"pointer", fontSize:14}}>
-                {savingProcedure ? "Salvataggio..." : "💾 Salva Intervento"}
-              </button>
-              <button onClick={() => setShowProcedureForm(false)}
-                style={{background:"#334155", color:"white", border:"none", borderRadius:8, padding:"10px 24px", fontWeight:600, cursor:"pointer", fontSize:14}}>
-                Annulla
-              </button>
-            </div>
+        {/* Sidebar Info: Demography */}
+        <div>
+          <div className="card" style={{ marginBottom: "24px" }}>
+             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
+                <Edit3 size={18} color="var(--primary)" />
+                <h3 style={{ fontSize: "15px" }}>Contatti e Recapiti</h3>
+             </div>
+             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <div style={{ display: "flex", gap: "12px" }}>
+                  <div style={{ color: "var(--primary)", width: "32px" }}><Phone size={18} /></div>
+                  <div>
+                    <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 600 }}>Telefono</div>
+                    <div style={{ fontSize: "14px", fontWeight: 500 }}>{patient.phone || "—"}</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: "12px" }}>
+                  <div style={{ color: "var(--primary)", width: "32px" }}><Mail size={18} /></div>
+                  <div>
+                    <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 600 }}>Email</div>
+                    <div style={{ fontSize: "14px", fontWeight: 500 }}>{patient.email || "—"}</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: "12px" }}>
+                  <div style={{ color: "var(--primary)", width: "32px" }}><MapPin size={18} /></div>
+                  <div>
+                    <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 600 }}>Indirizzo</div>
+                    <div style={{ fontSize: "14px", fontWeight: 500 }}>{patient.address || patient.city ? `${patient.address || ""}, ${patient.city || ""}` : "—"}</div>
+                  </div>
+                </div>
+             </div>
           </div>
-        )}
-
-        {/* LISTA INTERVENTI */}
-        <div style={{background:"#1e293b", borderRadius:12, overflow:"hidden", marginBottom:24}}>
-          <div style={{padding:"20px 24px", borderBottom:"1px solid #334155", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-            <h3 style={{margin:0, fontSize:15, fontWeight:600, color:"#38bdf8"}}>🔪 Interventi Chirurgici</h3>
-            <button onClick={() => setShowProcedureForm(!showProcedureForm)}
-              style={{background:"#38bdf8", color:"#0f172a", border:"none", borderRadius:8, padding:"8px 16px", fontWeight:600, cursor:"pointer", fontSize:13}}>
-              {showProcedureForm ? "✕ Chiudi" : "+ Nuovo Intervento"}
+          
+          <div className="card" style={{ background: "var(--primary)", color: "white" }}>
+            <h3 style={{ color: "white", fontSize: "15px", marginBottom: "12px" }}>Prossima Visita</h3>
+            <p style={{ opacity: 0.9, fontSize: "13px", marginBottom: "16px" }}>Nessun appuntamento programmato al momento.</p>
+            <button style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "none", background: "rgba(255,255,255,0.2)", color: "white", fontWeight: 600, fontSize: "13px" }}>
+              Pianifica Ora
             </button>
           </div>
-          {procedures.length === 0 ? (
-            <div style={{padding:32, textAlign:"center", color:"#94a3b8"}}>Nessun intervento registrato</div>
-          ) : (
-            <table style={{width:"100%", borderCollapse:"collapse"}}>
-              <thead>
-                <tr style={{background:"#0f172a"}}>
-                  <th style={{padding:"12px 24px", textAlign:"left", color:"#94a3b8", fontSize:13}}>Tipo Intervento</th>
-                  <th style={{padding:"12px 24px", textAlign:"left", color:"#94a3b8", fontSize:13}}>Data</th>
-                  <th style={{padding:"12px 24px", textAlign:"left", color:"#94a3b8", fontSize:13}}>Note</th>
-                </tr>
-              </thead>
-              <tbody>
-                {procedures.map((p, i) => (
-                  <tr key={p.id} style={{borderTop:"1px solid #334155", background:i%2===0?"transparent":"#162032"}}>
-                    <td style={{padding:"16px 24px", fontWeight:500}}>{p.procedure_type}</td>
-                    <td style={{padding:"16px 24px", color:"#94a3b8"}}>{p.procedure_date}</td>
-                    <td style={{padding:"16px 24px", color:"#94a3b8"}}>{p.notes||"—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        <div style={{display:"flex", gap:12}}>
-          <button onClick={generatePDF} disabled={generatingPdf}
-            style={{background:generatingPdf?"#334155":"#1d4ed8", color:"white", border:"none", borderRadius:8, padding:"12px 24px", fontWeight:600, cursor:"pointer", fontSize:14}}>
-            {generatingPdf ? "⏳ Generazione..." : "📄 Genera Cartella Clinica PDF"}
-          </button>
-          <button onClick={() => router.push(`/patients/${id}/consent`)} style={{background:"#7c3aed", color:"white", border:"none", borderRadius:8, padding:"12px 24px", fontWeight:600, cursor:"pointer", fontSize:14}}>
-            📋 Consenso Informato
-          </button>
-          <button style={{background:"#334155", color:"white", border:"none", borderRadius:8, padding:"12px 24px", fontWeight:600, cursor:"pointer", fontSize:14}}>
-            ✏️ Modifica Dati</button><button onClick={() => router.push(`/patients/${id}/documents`)} style={{background:"#0d9488", color:"white", border:"none", borderRadius:8, padding:"12px 24px", fontWeight:600, cursor:"pointer", fontSize:14}}>📄 Documenti
-          </button>
         </div>
       </div>
     </div>
