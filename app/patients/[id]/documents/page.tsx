@@ -231,8 +231,8 @@ export default function DocumentsPage() {
 
     // Firme in basso
     const sw = 100, sh = 18
-    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 128, y: 153, width: sw, height: sh })
-    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 383, y: 153, width: sw, height: sh })
+    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 135, y: 159, width: sw, height: sh })
+    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 388, y: 159, width: sw, height: sh })
   }
 
   async function saveSignedDoc() {
