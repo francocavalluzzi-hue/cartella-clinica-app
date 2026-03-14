@@ -225,14 +225,14 @@ export default function DocumentsPage() {
     // Nome e Cognome su riga "Sig./La Sig.ra"
     if (patient) {
       p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, {
-        x: 230, y: H - 175, size: fs, font, color: black
+        x: 250, y: H - 145, size: fs, font, color: black
       })
     }
 
     // Firme in basso
     const sw = 100, sh = 18
-    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 135, y: 159, width: sw, height: sh })
-    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 388, y: 159, width: sw, height: sh })
+    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 135, y: 163, width: sw, height: sh })
+    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 388, y: 163, width: sw, height: sh })
   }
 
   async function saveSignedDoc() {
