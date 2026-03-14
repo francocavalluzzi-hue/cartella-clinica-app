@@ -156,8 +156,8 @@ export default function DocumentsPage() {
 
     // Firme: posizionamento basato sul modulo visivo
     const sw = 100, sh = 25
-    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 380, y: 370, width: sw, height: sh }) // Firma paziente
-    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 380, y: 310, width: sw, height: sh }) // Firma medico
+    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 380, y: 390, width: sw, height: sh }) // Firma paziente
+    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 380, y: 330, width: sw, height: sh }) // Firma medico
     // Firma finale in fondo alla pagina
     if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 380, y: 110, width: sw, height: sh })
   }
