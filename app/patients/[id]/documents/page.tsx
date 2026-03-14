@@ -231,8 +231,8 @@ export default function DocumentsPage() {
 
     // Firme in basso
     const sw = 100, sh = 18
-    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 80, y: 135, width: sw, height: sh })
-    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 350, y: 135, width: sw, height: sh })
+    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 110, y: 115, width: sw, height: sh })
+    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 375, y: 115, width: sw, height: sh })
   }
 
   async function saveSignedDoc() {
@@ -251,7 +251,7 @@ export default function DocumentsPage() {
       const docB = await sigToBytes(doctorSigRef)
       const anestB = await sigToBytes(anestesistaRef)
       if (!isCartellaClinica && (!patB || !docB)) throw new Error("Firme mancanti")
-      
+
       if (selectedModulo.id === 0) {
         await fillSchedaAnagrafica(pdfDoc, patient, patB, docB)
       } else if (selectedModulo.id === 1) {
