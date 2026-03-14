@@ -162,7 +162,7 @@ export default function DocumentsPage() {
     if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 350, y: 402, width: sw, height: sh }) // Firma paziente
     if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 350, y: 359, width: sw, height: sh }) // Firma medico
     // Firma finale in fondo alla pagina 1
-    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 300, y: 110, width: sw, height: sh })
+    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 300, y: 114, width: sw, height: sh })
 
     // Pagina 2: "CONSENSO INFORMATO ALL'ANESTESIA"
     if (pages.length >= 2) {
@@ -177,8 +177,8 @@ export default function DocumentsPage() {
 
       // Firme in basso: "Firma Paziente" e "Firma Anestesista"
       const sw2 = 110, sh2 = 20
-      if (patB) p2.drawImage(await embedSig(pdfDoc, patB), { x: 120, y: 126, width: sw2, height: sh2 })       // Firma Paziente p2
-      if (anestB) p2.drawImage(await embedSig(pdfDoc, anestB), { x: 370, y: 126, width: sw2, height: sh2 }) // Firma Anestesista p2
+      if (patB) p2.drawImage(await embedSig(pdfDoc, patB), { x: 126, y: 124, width: sw2, height: sh2 })       // Firma Paziente p2
+      if (anestB) p2.drawImage(await embedSig(pdfDoc, anestB), { x: 370, y: 124, width: sw2, height: sh2 }) // Firma Anestesista p2
     }
   }
 
