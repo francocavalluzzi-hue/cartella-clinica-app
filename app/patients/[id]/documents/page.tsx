@@ -197,7 +197,7 @@ export default function DocumentsPage() {
       const p1 = pages[0]
       const { height: H1 } = p1.getSize()
       p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, {
-        x: 138, y: H1 - 104.5, size: fs, font, color: black
+        x: 138, y: H1 - 107.5, size: fs, font, color: black
       })
     }
 
