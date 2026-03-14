@@ -249,7 +249,7 @@ export default function DocumentsPage() {
     // Nome e Cognome del paziente (stima posizione)
     if (patient) {
       p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, {
-        x: 182, y: H - 195, size: fs, font, color: black
+        x: 182, y: H - 215, size: fs, font, color: black
       })
     }
 
