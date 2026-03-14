@@ -191,13 +191,13 @@ export default function DocumentsPage() {
     const font = await pdfDoc.embedStandardFont(StandardFonts.Helvetica)
     const fs = 10
     const black = rgb(0, 0, 0)
-    
+
     // Pagina 1: Nome e Cognome
     if (pages.length > 0) {
       const p1 = pages[0]
       const { height: H1 } = p1.getSize()
-      p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, { 
-        x: 130, y: H1 - 105.5, size: fs, font, color: black 
+      p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, {
+        x: 130, y: H1 - 105.5, size: fs, font, color: black
       })
     }
 
@@ -205,10 +205,10 @@ export default function DocumentsPage() {
     const lp = pages[pages.length - 1]
     const { width: lw } = lp.getSize()
     const sw = 130, sh = 35
-    
+
     // Alzate le firme per allinearle alle righe del PDF
-    if (patB) lp.drawImage(await embedSig(pdfDoc, patB), { x: 80, y: 350, width: sw, height: sh })
-    if (docB) lp.drawImage(await embedSig(pdfDoc, docB), { x: 80, y: 315, width: sw, height: sh })
+    if (patB) lp.drawImage(await embedSig(pdfDoc, patB), { x: 130, y: 346, width: sw, height: sh })
+    if (docB) lp.drawImage(await embedSig(pdfDoc, docB), { x: 130, y: 308, width: sw, height: sh })
   }
 
   async function saveSignedDoc() {
