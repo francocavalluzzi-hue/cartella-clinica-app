@@ -249,13 +249,13 @@ export default function DocumentsPage() {
     // Nome e Cognome del paziente (stima posizione)
     if (patient) {
       p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, {
-        x: 400, y: H - 78, size: fs, font, color: black
+        x: 280, y: H - 158, size: fs, font, color: black
       })
     }
 
     // Firma Medico in basso a destra
     const sw = 100, sh = 18
-    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 420, y: 125, width: sw, height: sh })
+    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 400, y: 125, width: sw, height: sh })
   }
 
   async function saveSignedDoc() {
