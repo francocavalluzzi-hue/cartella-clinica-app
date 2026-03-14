@@ -189,14 +189,26 @@ export default function DocumentsPage() {
   ) {
     const pages = pdfDoc.getPages()
     const font = await pdfDoc.embedStandardFont(StandardFonts.Helvetica)
-    const gray = rgb(0.4, 0.4, 0.4)
+    const fs = 10
+    const black = rgb(0, 0, 0)
+    
+    // Pagina 1: Nome e Cognome
+    if (pages.length > 0) {
+      const p1 = pages[0]
+      const { height: H1 } = p1.getSize()
+      p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, { 
+        x: 130, y: H1 - 105.5, size: fs, font, color: black 
+      })
+    }
+
+    // Ultima Pagina: Firme
     const lp = pages[pages.length - 1]
     const { width: lw } = lp.getSize()
-    if (patB) lp.drawImage(await embedSig(pdfDoc, patB), { x: 50, y: 80, width: 130, height: 35 })
-    if (docB) lp.drawImage(await embedSig(pdfDoc, docB), { x: lw - 190, y: 80, width: 130, height: 35 })
-    lp.drawText("Firma Paziente", { x: 50, y: 70, size: 7, font, color: gray })
-    lp.drawText("Firma Medico", { x: lw - 190, y: 70, size: 7, font, color: gray })
-    lp.drawText(`Data: ${new Date().toLocaleDateString("it-IT")}`, { x: 50, y: 60, size: 7, font, color: gray })
+    const sw = 130, sh = 35
+    
+    // Alzate le firme per allinearle alle righe del PDF
+    if (patB) lp.drawImage(await embedSig(pdfDoc, patB), { x: 80, y: 350, width: sw, height: sh })
+    if (docB) lp.drawImage(await embedSig(pdfDoc, docB), { x: 80, y: 315, width: sw, height: sh })
   }
 
   async function saveSignedDoc() {
