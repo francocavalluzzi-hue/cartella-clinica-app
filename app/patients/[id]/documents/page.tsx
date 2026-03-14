@@ -172,7 +172,7 @@ export default function DocumentsPage() {
       const drawP2 = (text: string, x: number, y_top: number) => {
         if (text) p2.drawText(text, { x, y: H2 - y_top - 0.5, size: fs, font, color: black })
       }
-      drawP2(`${patient.name || ""} ${patient.surname || ""}`, 110, 118) // "Io sottoscritto ___"
+      drawP2(`${patient.name || ""} ${patient.surname || ""}`, 110, 103) // "Io sottoscritto ___"
 
       // Firme in basso: "Firma Paziente" e "Firma Anestesista"
       const sw2 = 110, sh2 = 20
