@@ -67,14 +67,14 @@ export default function DocumentsPage() {
     const draw1 = (text: string, x: number, y: number) => {
       if (text) p1.drawText(text, { x, y, size: fs, font, color: black })
     }
-    draw1(new Date().toLocaleDateString("it-IT"),         509.9, 757.2)
-    draw1(patient.surname     || "",                       102.9, 742.2)
-    draw1(patient.name        || "",                      358.9, 742.2)
-    draw1(patient.birthdate   || "",                      150.9, 727.2)
-    draw1(patient.fiscal_code || "",                      389.9, 727.2)
-    draw1(patient.address     || "",                       82.9, 712.2)
-    draw1(patient.phone       || "",                       102.9, 695.0)
-    draw1(patient.email       || "",                      369.9, 695.0)
+    draw1(new Date().toLocaleDateString("it-IT"), 509.9, 757.2)
+    draw1(patient.surname || "", 102.9, 742.2)
+    draw1(patient.name || "", 358.9, 742.2)
+    draw1(patient.birthdate || "", 150.9, 727.2)
+    draw1(patient.fiscal_code || "", 389.9, 727.2)
+    draw1(patient.address || "", 82.9, 712.2)
+    draw1(patient.phone || "", 102.9, 695.0)
+    draw1(patient.email || "", 369.9, 695.0)
 
     // Firma paziente p1 — riga "Firma____" y0_doc=525.52 → y_pdf_top=316.4
     // Immagine alta 20pt, la posiziono a y = 316.4 - 20 = 296.4
@@ -133,7 +133,7 @@ export default function DocumentsPage() {
     }
 
     draw(patient.surname || "", 102, 160)
-    draw(patient.name    || "", 332, 160)
+    draw(patient.name || "", 332, 160)
   }
 
   async function fillConsensoAnestesia(
@@ -156,8 +156,8 @@ export default function DocumentsPage() {
 
     // Firme: posizionamento basato sul modulo visivo
     const sw = 100, sh = 25
-    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 350, y: 410, width: sw, height: sh }) // Firma paziente
-    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 350, y: 350, width: sw, height: sh }) // Firma medico
+    if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 350, y: 407, width: sw, height: sh }) // Firma paziente
+    if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 350, y: 359, width: sw, height: sh }) // Firma medico
     // Firma finale in fondo alla pagina
     if (patB) p1.drawImage(await embedSig(pdfDoc, patB), { x: 380, y: 110, width: sw, height: sh })
   }
@@ -172,10 +172,10 @@ export default function DocumentsPage() {
     const gray = rgb(0.4, 0.4, 0.4)
     const lp = pages[pages.length - 1]
     const { width: lw } = lp.getSize()
-    if (patB) lp.drawImage(await embedSig(pdfDoc, patB), { x: 50,        y: 80, width: 130, height: 35 })
-    if (docB) lp.drawImage(await embedSig(pdfDoc, docB), { x: lw - 190,  y: 80, width: 130, height: 35 })
-    lp.drawText("Firma Paziente", { x: 50,       y: 70, size: 7, font, color: gray })
-    lp.drawText("Firma Medico",   { x: lw - 190, y: 70, size: 7, font, color: gray })
+    if (patB) lp.drawImage(await embedSig(pdfDoc, patB), { x: 50, y: 80, width: 130, height: 35 })
+    if (docB) lp.drawImage(await embedSig(pdfDoc, docB), { x: lw - 190, y: 80, width: 130, height: 35 })
+    lp.drawText("Firma Paziente", { x: 50, y: 70, size: 7, font, color: gray })
+    lp.drawText("Firma Medico", { x: lw - 190, y: 70, size: 7, font, color: gray })
     lp.drawText(`Data: ${new Date().toLocaleDateString("it-IT")}`, { x: 50, y: 60, size: 7, font, color: gray })
   }
 
