@@ -257,12 +257,31 @@ export default function DocumentsPage() {
     const sw = 100, sh = 18
     if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 400, y: 115, width: sw, height: sh })
   }
+  
+  async function fillTabellaMedicazioni(
+    pdfDoc: PDFDocument, patient: any
+  ) {
+    const pages = pdfDoc.getPages()
+    const font = await pdfDoc.embedStandardFont(StandardFonts.HelveticaBold)
+    const fs = 11
+    const black = rgb(0, 0, 0)
+    const p1 = pages[0]
+    const { height: H } = p1.getSize()
+
+    // Nome e Cognome sulla riga "Paziente"
+    if (patient) {
+      p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, {
+        x: 100, y: H - 250, size: fs, font, color: black
+      })
+    }
+  }
 
   async function saveSignedDoc() {
     if (!selectedModulo || !patient) return
     const isCartellaClinica = selectedModulo.id === 1
     const isRicetta = selectedModulo.id === 5
-    if (!isCartellaClinica) {
+    const isTabella = selectedModulo.id === 6
+    if (!isCartellaClinica && !isTabella) {
       if (!isRicetta && patientSigRef.current?.isEmpty()) return alert("❌ Firma del paziente obbligatoria")
       if (doctorSigRef.current?.isEmpty()) return alert("❌ Firma del medico obbligatoria")
     }
@@ -274,7 +293,7 @@ export default function DocumentsPage() {
       const patB = await sigToBytes(patientSigRef)
       const docB = await sigToBytes(doctorSigRef)
       const anestB = await sigToBytes(anestesistaRef)
-      if (!isCartellaClinica && !isRicetta && (!patB || !docB)) throw new Error("Firme mancanti")
+      if (!isCartellaClinica && !isRicetta && !isTabella && (!patB || !docB)) throw new Error("Firme mancanti")
       if (isRicetta && !docB) throw new Error("Firma medico mancante")
 
       if (selectedModulo.id === 0) {
@@ -287,6 +306,8 @@ export default function DocumentsPage() {
         await fillLetteraDimissioni(pdfDoc, patient, patB, docB)
       } else if (selectedModulo.id === 5) {
         await fillRicettaPrescrizioni(pdfDoc, patient, docB)
+      } else if (selectedModulo.id === 6) {
+        await fillTabellaMedicazioni(pdfDoc, patient)
       } else {
         await fillGenericPDF(pdfDoc, patient, patB, docB)
       }
