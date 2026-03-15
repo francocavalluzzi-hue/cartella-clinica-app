@@ -87,6 +87,14 @@ export default function GuestRegisterWizard() {
       })
       if (uploadError) throw uploadError
 
+      // 4. Salva il link nel database per farlo vedere al dottore
+      const { data: { publicUrl } } = supabase.storage.from("FIRME_PAZIENTI").getPublicUrl(fileName)
+      await supabase.from("documents").insert([{ 
+        patient_id: newPatientId, 
+        document_type: modulo.id, 
+        file_url: publicUrl 
+      }])
+
       setStep(3) // Success
     } catch (err: any) {
       alert(err.message)
