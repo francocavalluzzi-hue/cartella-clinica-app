@@ -19,7 +19,8 @@ import {
   ChevronRight,
   Download,
   PenTool,
-  Edit3
+  Edit3,
+  Trash2
 } from "lucide-react"
 
 export default function PatientPage() {
@@ -32,6 +33,7 @@ export default function PatientPage() {
   const [generatingPdf, setGeneratingPdf] = useState(false)
   const [showProcedureForm, setShowProcedureForm] = useState(false)
   const [savingProcedure, setSavingProcedure] = useState(false)
+  const [editingProcedureId, setEditingProcedureId] = useState<string | null>(null)
   const [procedureForm, setProcedureForm] = useState({
     procedure_type: "",
     procedure_date: "",
@@ -59,16 +61,50 @@ export default function PatientPage() {
   async function saveProcedure() {
     if (!procedureForm.procedure_type || !procedureForm.procedure_date) return alert("Tipo intervento e data obbligatori")
     setSavingProcedure(true)
-    await supabase.from("procedures").insert([{
-      patient_id: id,
-      procedure_type: procedureForm.procedure_type,
-      procedure_date: procedureForm.procedure_date,
-      notes: procedureForm.notes,
-    }])
+    
+    if (editingProcedureId) {
+      await supabase.from("procedures").update({
+        procedure_type: procedureForm.procedure_type,
+        procedure_date: procedureForm.procedure_date,
+        notes: procedureForm.notes,
+      }).eq("id", editingProcedureId)
+    } else {
+      await supabase.from("procedures").insert([{
+        patient_id: id,
+        procedure_type: procedureForm.procedure_type,
+        procedure_date: procedureForm.procedure_date,
+        notes: procedureForm.notes,
+      }])
+    }
+    
+    resetProcedureForm()
+    loadProcedures()
+  }
+
+  async function deleteProcedure(procId: string) {
+    if (!confirm("Sei sicuro di voler eliminare questo intervento? Questa azione è irreversibile.")) return
+    await supabase.from("procedures").delete().eq("id", procId)
+    loadProcedures()
+  }
+
+  function startEditProcedure(proc: any) {
+    setProcedureForm({
+      procedure_type: proc.procedure_type || "",
+      procedure_date: proc.procedure_date || "",
+      notes: proc.notes || "",
+      anesthesia: proc.anesthesia || "",
+      duration: proc.duration || "",
+      complications: proc.complications || ""
+    })
+    setEditingProcedureId(proc.id)
+    setShowProcedureForm(true)
+  }
+
+  function resetProcedureForm() {
     setProcedureForm({ procedure_type:"", procedure_date:"", notes:"", anesthesia:"", duration:"", complications:"" })
+    setEditingProcedureId(null)
     setShowProcedureForm(false)
     setSavingProcedure(false)
-    loadProcedures()
   }
 
   async function generatePDF() {
@@ -229,8 +265,8 @@ export default function PatientPage() {
                   </div>
                   <h2 style={{ fontSize: "16px" }}>Interventi e Procedure</h2>
                 </div>
-                {!showProcedureForm && (
-                  <button onClick={() => setShowProcedureForm(true)} style={{ color: "var(--primary)", background: "transparent", border: "none", fontWeight: 600, fontSize: "14px", display: "flex", alignItems: "center", gap: "4px" }}>
+                 {!showProcedureForm && (
+                  <button onClick={() => { resetProcedureForm(); setShowProcedureForm(true); }} style={{ color: "var(--primary)", background: "transparent", border: "none", fontWeight: 600, fontSize: "14px", display: "flex", alignItems: "center", gap: "4px" }}>
                     <Plus size={18} /> Aggiungi
                   </button>
                 )}
@@ -238,6 +274,9 @@ export default function PatientPage() {
 
              {showProcedureForm && (
                <div style={{ padding: "24px", background: "#f9fafb", borderBottom: "1px solid var(--border)" }}>
+                  <h3 style={{ fontSize: "14px", fontWeight: 700, marginBottom: "16px", color: "var(--text-main)" }}>
+                    {editingProcedureId ? "Modifica Intervento" : "Nuovo Intervento"}
+                  </h3>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
                     <div>
                       <label style={{ display: "block", fontSize: "12px", fontWeight: 600, marginBottom: "8px" }}>Tipo Intervento</label>
@@ -266,8 +305,10 @@ export default function PatientPage() {
                       style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border)", minHeight: "80px" }} />
                   </div>
                   <div style={{ display: "flex", gap: "12px" }}>
-                    <button onClick={saveProcedure} className="btn-primary">Salva Intervento</button>
-                    <button onClick={() => setShowProcedureForm(false)} style={{ background: "transparent", border: "1px solid var(--border)", borderRadius: "8px", padding: "10px 20px", fontSize: "14px" }}>Annulla</button>
+                    <button onClick={saveProcedure} disabled={savingProcedure} className="btn-primary">
+                      {savingProcedure ? "Salvataggio..." : (editingProcedureId ? "Aggiorna Intervento" : "Salva Intervento")}
+                    </button>
+                    <button onClick={resetProcedureForm} style={{ background: "transparent", border: "1px solid var(--border)", borderRadius: "8px", padding: "10px 20px", fontSize: "14px" }}>Annulla</button>
                   </div>
                </div>
              )}
@@ -277,16 +318,25 @@ export default function PatientPage() {
                   <div style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>Nessun intervento registrato per questo paziente.</div>
                 ) : (
                   procedures.map((p) => (
-                    <div key={p.id} style={{ padding: "20px 24px", display: "flex", gap: "20px", borderBottom: "1px solid var(--border)" }}>
-                      <div style={{ width: "48px", height: "48px", borderRadius: "10px", background: "white", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
+                    <div key={p.id} style={{ padding: "20px 24px", display: "flex", gap: "20px", borderBottom: "1px solid var(--border)", alignItems: "flex-start" }}>
+                      <div style={{ width: "48px", height: "48px", borderRadius: "10px", background: "white", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)", flexShrink: 0 }}>
                         <ClipboardList size={22} />
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                          <h4 style={{ fontSize: "15px" }}>{p.procedure_type}</h4>
-                          <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>{new Date(p.procedure_date).toLocaleDateString("it-IT")}</span>
+                          <h4 style={{ fontSize: "15px", fontWeight: 700 }}>{p.procedure_type}</h4>
+                          <span style={{ fontSize: "13px", color: "var(--text-muted)", fontWeight: 500 }}>{new Date(p.procedure_date).toLocaleDateString("it-IT")}</span>
                         </div>
-                        <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.5" }}>{p.notes || "Nessuna nota aggiuntiva."}</p>
+                        <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.5", marginBottom: "12px" }}>{p.notes || "Nessuna nota aggiuntiva."}</p>
+                        
+                        <div style={{ display: "flex", gap: "16px", marginTop: "8px" }}>
+                          <button onClick={() => startEditProcedure(p)} style={{ background: "transparent", border: "none", color: "var(--primary)", fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px", cursor: "pointer", padding: 0 }}>
+                            <Edit3 size={14} /> Modifica
+                          </button>
+                          <button onClick={() => deleteProcedure(p.id)} style={{ background: "transparent", border: "none", color: "var(--danger)", fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px", cursor: "pointer", padding: 0 }}>
+                            <Trash2 size={14} /> Elimina
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))
