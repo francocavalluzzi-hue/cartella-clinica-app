@@ -4,189 +4,241 @@ import { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { supabase } from "../../../../lib/supabaseClient"
 import SignatureCanvas from "react-signature-canvas"
-import { ArrowRight, ArrowLeft, CheckCircle, ShieldAlert, Loader2 } from "lucide-react"
+import { PDFDocument } from "pdf-lib"
+import { 
+  CheckCircle2, 
+  ArrowLeft, 
+  PenTool, 
+  Download, 
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
+  FileText
+} from "lucide-react"
+import { BUCKET_URL, MODULI } from "../../../../lib/constants"
+import { 
+  sigToBytes, 
+  fillSchedaAnagrafica, 
+  fillCartellaClinica, 
+  fillConsensoAnestesia, 
+  fillGenericPDF, 
+  fillLetteraDimissioni, 
+  fillRicettaPrescrizioni, 
+  fillTabellaMedicazioni, 
+  fillChirurgiaAmbulatoriale 
+} from "../../../../lib/pdfUtils"
 
-export default function PatientTabletWizard() {
+export default function TabletPatientSignaturePage() {
   const params = useParams()
   const id = params.id as string
   const router = useRouter()
   
   const [patient, setPatient] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [step, setStep] = useState(1) // 1: Conferma Info, 2: Consensi, 3: Firma
-  const [saving, setSaving] = useState(false)
-  const sigPad = useRef<any>(null)
+  const [selectedIdx, setSelectedIdx] = useState(0)
+  const [signing, setSigning] = useState(false)
+  const [done, setDone] = useState<number[]>([])
+
+  const patSigRef = useRef<any>(null)
+  const docSigRef = useRef<any>(null)
 
   useEffect(() => {
-    if (id) loadPatient()
+    if (id) loadData()
   }, [id])
 
-  async function loadPatient() {
+  async function loadData() {
     const { data } = await supabase.from("patients").select("*").eq("id", id).single()
-    if (!data) {
-      alert("Errore caricamento dati paziente")
-      return router.push("/tablet/patient")
-    }
     setPatient(data)
     setLoading(false)
   }
 
-  async function handleFinish() {
-    if (sigPad.current?.isEmpty()) {
-      alert("La firma è obbligatoria per proseguire.")
-      return
-    }
-    
-    setSaving(true)
+  const currentModulo = MODULI[selectedIdx]
+
+  async function handleSign() {
+    if (!patient || signing) return
+    setSigning(true)
     try {
-      // In un caso d'uso reale, qui salveremmo l'immagine della firma su Supabase
-      // e segneremmo lo stato del paziente come "Ha completato il desk reception".
-      // Per il momento simuliamo l'operazione.
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      setStep(4) // Display Thank You screen
-    } catch (e) {
-      alert("Si è verificato un errore durante il salvataggio.")
+      const patB = await sigToBytes(patSigRef)
+      const docB = await sigToBytes(docSigRef)
+      
+      if (!patB) { alert("Firma Paziente obbligatoria"); setSigning(false); return }
+
+      const res = await fetch(`${BUCKET_URL}/${currentModulo.file}`)
+      const pdfBytes = await res.arrayBuffer()
+      const pdfDoc = await PDFDocument.load(pdfBytes)
+
+      // Logica di riempimento basata sull'ID del modulo
+      if (currentModulo.id === 0) await fillSchedaAnagrafica(pdfDoc, patient, patB, docB)
+      else if (currentModulo.id === 1) await fillCartellaClinica(pdfDoc, patient, patB, docB)
+      else if (currentModulo.id === 2) await fillConsensoAnestesia(pdfDoc, patient, patB, docB, null)
+      else if (currentModulo.id === 4) await fillLetteraDimissioni(pdfDoc, patient, patB, docB)
+      else if (currentModulo.id === 5) await fillRicettaPrescrizioni(pdfDoc, patient, docB)
+      else if (currentModulo.id === 6) await fillTabellaMedicazioni(pdfDoc, patient)
+      else if (currentModulo.id === 7) await fillChirurgiaAmbulatoriale(pdfDoc, patient, docB)
+      else await fillGenericPDF(pdfDoc, patient, patB, docB)
+
+      const finalPdfBytes = await pdfDoc.save()
+      const fileName = `${patient.surname}_${patient.name}_${currentModulo.nome.replace(/ /g, "_")}.pdf`
+      
+      const { error } = await supabase.storage.from("FIRME_PAZIENTI").upload(fileName, finalPdfBytes, {
+        contentType: "application/pdf",
+        upsert: true
+      })
+
+      if (error) throw error
+      
+      setDone(prev => [...prev, currentModulo.id])
+      alert("Documento firmato e salvato con successo!")
+      patSigRef.current?.clear()
+      docSigRef.current?.clear()
+    } catch (err) {
+      console.error(err)
+      alert("Errore durante il salvataggio")
     } finally {
-      setSaving(false)
+      setSigning(false)
     }
   }
 
-  if (loading) return <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "60vh", color: "var(--primary)" }}><Loader2 className="animate-spin" size={48} /></div>
-
-  // Schermata finale di ringraziamento
-  if (step === 4) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh", padding: "40px", textAlign: "center" }}>
-        <CheckCircle size={80} color="var(--success)" style={{ marginBottom: "24px" }} />
-        <h1 style={{ fontSize: "32px", fontWeight: 800, marginBottom: "16px", color: "var(--text-main)" }}>Grazie, {patient?.name}!</h1>
-        <p style={{ fontSize: "20px", color: "var(--text-muted)", maxWidth: "600px", lineHeight: "1.5", marginBottom: "40px" }}>
-          Abbiamo registrato correttamente i tuoi consensi e la tua firma. Puoi restituire il tablet in segreteria e attendere il tuo turno.
-        </p>
-        <button 
-          onClick={() => router.push("/tablet/patient")}
-          style={{ padding: "16px 40px", background: "var(--primary)", color: "white", borderRadius: "12px", fontSize: "18px", fontWeight: "bold", border: "none" }}
-        >
-          Torna alla Home
-        </button>
-      </div>
-    )
-  }
+  if (loading) return <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}><Loader2 className="animate-spin" /></div>
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "40px 20px" }}>
-      {/* Progress Bar Minimal */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "40px", position: "relative" }}>
-        <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: "4px", background: "var(--border)", zIndex: 0, transform: "translateY(-50%)" }}>
-          <div style={{ height: "100%", background: "var(--primary)", width: `${((step - 1) / 2) * 100}%`, transition: "width 0.3s ease" }} />
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "#f8fafc" }}>
+      {/* Mini Header Tablet */}
+      <div style={{ padding: "16px 24px", background: "white", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <button onClick={() => router.back()} style={{ border: "none", background: "transparent", color: "#64748b", display: "flex", alignItems: "center", gap: "8px" }}>
+          <ArrowLeft size={20} /> Esci
+        </button>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: "12px", color: "#64748b", fontWeight: 600, textTransform: "uppercase" }}>Paziente</div>
+          <div style={{ fontSize: "16px", fontWeight: 700 }}>{patient.name} {patient.surname}</div>
         </div>
-        {[1, 2, 3].map(i => (
-          <div key={i} style={{ 
-            width: "36px", height: "36px", borderRadius: "50%", 
-            background: step >= i ? "var(--primary)" : "white", 
-            border: step >= i ? "none" : "2px solid var(--border)",
-            color: step >= i ? "white" : "var(--text-muted)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontWeight: "bold", zIndex: 1, transition: "all 0.3s ease"
-          }}>{i}</div>
-        ))}
+        <div style={{ width: "60px" }}></div> {/* Spacer */}
       </div>
 
-      <div style={{ background: "white", borderRadius: "24px", padding: "40px", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}>
-        
-        {step === 1 && (
-          <div>
-            <h2 style={{ fontSize: "28px", fontWeight: 800, marginBottom: "12px" }}>Verifica i tuoi dati</h2>
-            <p style={{ fontSize: "18px", color: "var(--text-muted)", marginBottom: "32px" }}>Controlla che le informazioni anagrafiche di base siano corrette.</p>
-            
-            <div style={{ display: "grid", gap: "24px" }}>
-              {[
-                { label: "Nome e Cognome", value: `${patient?.name} ${patient?.surname}` },
-                { label: "Codice Fiscale", value: patient?.fiscal_code },
-                { label: "Data di Nascita", value: patient?.birthdate || "Non inserita" },
-                { label: "Residenza", value: patient?.city ? `${patient?.address || ""}, ${patient?.city}` : "Non inserita" },
-              ].map(f => (
-                <div key={f.label} style={{ background: "#f8fafc", padding: "20px", borderRadius: "12px", border: "1px solid var(--border)" }}>
-                  <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "8px" }}>{f.label}</div>
-                  <div style={{ fontSize: "20px", fontWeight: 600, color: "var(--text-main)" }}>{f.value}</div>
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        {/* Sidebar Moduli Tablet */}
+        <div style={{ width: "280px", background: "#f1f5f9", borderRight: "1px solid #e2e8f0", overflowY: "auto", padding: "16px" }}>
+          <h3 style={{ fontSize: "13px", color: "#64748b", fontWeight: 700, marginBottom: "16px", padding: "0 8px" }}>DOCUMENTI DA FIRMARE</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {MODULI.map((m, idx) => (
+              <button 
+                key={m.id}
+                onClick={() => setSelectedIdx(idx)}
+                style={{
+                  padding: "16px",
+                  borderRadius: "12px",
+                  border: "none",
+                  background: selectedIdx === idx ? "var(--primary)" : "white",
+                  color: selectedIdx === idx ? "white" : "#1e293b",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  textAlign: "left",
+                  boxShadow: selectedIdx === idx ? "0 4px 6px -1px rgba(13, 148, 136, 0.2)" : "0 1px 2px rgba(0,0,0,0.05)",
+                  cursor: "pointer"
+                }}
+              >
+                <div style={{ 
+                  width: "32px", 
+                  height: "32px", 
+                  borderRadius: "8px", 
+                  background: selectedIdx === idx ? "rgba(255,255,255,0.2)" : "#f8fafc",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: selectedIdx === idx ? "white" : "var(--primary)"
+                }}>
+                  {done.includes(m.id) ? <CheckCircle2 size={18} /> : <FileText size={18} />}
                 </div>
-              ))}
+                <div style={{ flex: 1, fontSize: "14px", fontWeight: 600 }}>{m.nome}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Signature Area Tablet */}
+        <div style={{ flex: 1, padding: "32px", display: "flex", flexDirection: "column", gap: "24px", overflowY: "auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "8px" }}>
+            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#0f172a" }}>{currentModulo.nome}</h2>
+            <p style={{ color: "#64748b", fontSize: "14px" }}>Leggi il documento sul monitor e apponi la firma qui sotto.</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+            {/* Signature Patient */}
+            <div style={{ background: "white", borderRadius: "16px", padding: "24px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#475569" }}>FIRMA DEL PAZIENTE</h4>
+                <button onClick={() => patSigRef.current?.clear()} style={{ fontSize: "12px", color: "var(--primary)", border: "none", background: "transparent", fontWeight: 600 }}>CANCELLA</button>
+              </div>
+              <div style={{ background: "#f8fafc", borderRadius: "12px", border: "2px dashed #cbd5e1", overflow: "hidden" }}>
+                <SignatureCanvas
+                  ref={patSigRef}
+                  canvasProps={{ width: 400, height: 200, className: "sigCanvas" }}
+                  backgroundColor="white"
+                />
+              </div>
             </div>
 
-            <div style={{ marginTop: "32px", padding: "20px", background: "#fef2f2", color: "#991b1b", borderRadius: "12px", display: "flex", gap: "12px" }}>
-              <ShieldAlert size={24} style={{ flexShrink: 0 }} />
-              <p style={{ fontSize: "15px", lineHeight: "1.5" }}>Se trovi degli errori nei tuoi dati, ti preghiamo di avvisare immediatamente il personale in segreteria prima di proseguire.</p>
+            {/* Signature Doctor */}
+            <div style={{ background: "white", borderRadius: "16px", padding: "24px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#475569" }}>FIRMA DEL MEDICO</h4>
+                <button onClick={() => docSigRef.current?.clear()} style={{ fontSize: "12px", color: "var(--primary)", border: "none", background: "transparent", fontWeight: 600 }}>CANCELLA</button>
+              </div>
+              <div style={{ background: "#f8fafc", borderRadius: "12px", border: "2px dashed #cbd5e1", overflow: "hidden" }}>
+                <SignatureCanvas
+                  ref={docSigRef}
+                  canvasProps={{ width: 400, height: 200, className: "sigCanvas" }}
+                  backgroundColor="white"
+                />
+              </div>
             </div>
           </div>
-        )}
 
-        {step === 2 && (
-          <div>
-            <h2 style={{ fontSize: "28px", fontWeight: 800, marginBottom: "12px" }}>Consenso al Trattamento Dati</h2>
-            <p style={{ fontSize: "18px", color: "var(--text-muted)", marginBottom: "32px" }}>Leggere e accettare l'informativa sulla privacy.</p>
-            
-            <div style={{ background: "#f8fafc", padding: "24px", borderRadius: "12px", border: "1px solid var(--border)", height: "300px", overflowY: "auto", fontSize: "15px", lineHeight: "1.7", color: "var(--text-muted)" }}>
-              <p style={{ marginBottom: "16px" }}>Ai sensi e per gli effetti del Regolamento UE 2016/679 (GDPR), il paziente dichiara di essere stato informato sulle modalità e finalità del trattamento dei propri dati personali, inclusi quelli inerenti lo stato di salute (dati particolari).</p>
-              <p style={{ marginBottom: "16px" }}>I dati raccolti saranno utilizzati esclusivamente per finalità di cura, diagnosi e riabilitazione, nonché per adempimenti amministrativi e contabili legati alla prestazione medica richiesta.</p>
-              <p>Il conferimento dei dati è obbligatorio per l'erogazione della prestazione medica. La base giuridica del trattamento è rappresentata dalla necessità di erogare la prestazione sanitaria richiesta e, per i dati particolari, dalla tutela della salute e dell'incolumità fisica dell'interessato.</p>
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div>
-            <h2 style={{ fontSize: "28px", fontWeight: 800, marginBottom: "12px" }}>Firma Elettronica</h2>
-            <p style={{ fontSize: "18px", color: "var(--text-muted)", marginBottom: "32px" }}>Apponi la tua firma all'interno del riquadro utilizzando il dito o il pennino fornito.</p>
-            
-            <div style={{ background: "white", border: "2px solid var(--border)", borderRadius: "16px", padding: "8px", marginBottom: "16px", boxShadow: "inset 0 2px 10px rgba(0,0,0,0.02)" }}>
-              <SignatureCanvas 
-                ref={sigPad} 
-                canvasProps={{ 
-                  style: { width: "100%", height: "300px", background: "transparent" } 
-                }} 
-              />
-            </div>
-            
+          <div style={{ marginTop: "20px", display: "flex", justifyContent: "center" }}>
             <button 
-              onClick={() => sigPad.current?.clear()} 
-              style={{ background: "transparent", color: "var(--danger)", border: "none", fontSize: "16px", fontWeight: 600, padding: "8px 0" }}
+              onClick={handleSign}
+              disabled={signing}
+              style={{
+                padding: "20px 60px",
+                borderRadius: "50px",
+                background: "var(--primary)",
+                color: "white",
+                border: "none",
+                fontSize: "18px",
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                boxShadow: "0 10px 15px -3px rgba(13, 148, 136, 0.3)",
+                cursor: "pointer",
+                opacity: signing ? 0.7 : 1
+              }}
             >
-              Cancella e riprova
+              {signing ? <Loader2 className="animate-spin" /> : <PenTool size={22} />}
+              {signing ? "Salvataggio..." : "CONFERMA E SALVA"}
             </button>
           </div>
-        )}
 
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "auto", paddingTop: "32px" }}>
+            <button 
+              disabled={selectedIdx === 0}
+              onClick={() => setSelectedIdx(prev => prev - 1)}
+              style={{ border: "1px solid #e2e8f0", background: "white", padding: "12px 24px", borderRadius: "12px", color: "#64748b", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", opacity: selectedIdx === 0 ? 0.5 : 1 }}
+            >
+              <ChevronLeft size={20} /> Precedente
+            </button>
+            <button 
+              disabled={selectedIdx === MODULI.length - 1}
+              onClick={() => setSelectedIdx(prev => prev + 1)}
+              style={{ border: "1px solid #e2e8f0", background: "white", padding: "12px 24px", borderRadius: "12px", color: "#64748b", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", opacity: selectedIdx === MODULI.length - 1 ? 0.5 : 1 }}
+            >
+              Prossimo <ChevronRight size={20} />
+            </button>
+          </div>
+        </div>
       </div>
-
-      {/* Navigation Buttons */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "40px" }}>
-        {step > 1 ? (
-          <button 
-            onClick={() => setStep(s => s - 1)}
-            style={{ padding: "20px 32px", fontSize: "18px", fontWeight: "bold", background: "white", border: "2px solid var(--border)", borderRadius: "16px", display: "flex", alignItems: "center", gap: "12px", color: "var(--text-main)" }}
-          >
-            <ArrowLeft size={24} /> Indietro
-          </button>
-        ) : <div />}
-
-        {step < 3 ? (
-          <button 
-            onClick={() => setStep(s => s + 1)}
-            style={{ padding: "20px 32px", fontSize: "18px", fontWeight: "bold", background: "var(--primary)", border: "none", color: "white", borderRadius: "16px", display: "flex", alignItems: "center", gap: "12px", boxShadow: "0 10px 15px -3px rgba(15, 118, 110, 0.3)" }}
-          >
-            Conferma e Prosegui <ArrowRight size={24} />
-          </button>
-        ) : (
-          <button 
-            onClick={handleFinish}
-            disabled={saving}
-            style={{ padding: "20px 32px", fontSize: "18px", fontWeight: "bold", background: "var(--success)", border: "none", color: "white", borderRadius: "16px", display: "flex", alignItems: "center", gap: "12px", boxShadow: "0 10px 15px -3px rgba(22, 163, 74, 0.3)", opacity: saving ? 0.7 : 1 }}
-          >
-            {saving ? <Loader2 className="animate-spin" size={24} /> : <CheckCircle size={24} />}
-            {saving ? "Salvataggio..." : "Salva e Concludi"}
-          </button>
-        )}
-      </div>
-
     </div>
   )
 }
