@@ -85,7 +85,7 @@ export async function fillChirurgiaAmbulatoriale(pdfDoc: PDFDocument, patient: a
   const sw = 100, sh = 18; if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 380, y: 188, width: sw, height: sh })
 }
 
-export async function generatePrivacyConsentPDF(patient: any, patB: ArrayBuffer | null) {
+export async function generatePrivacyConsentPDF(patient: any, patB: ArrayBuffer | null, idPhotoB: ArrayBuffer | null) {
   const pdfDoc = await PDFDocument.create()
   const page = pdfDoc.addPage([595.28, 841.89]) // A4
   const font = await pdfDoc.embedStandardFont(StandardFonts.Helvetica)
@@ -110,14 +110,36 @@ export async function generatePrivacyConsentPDF(patient: any, patB: ArrayBuffer 
     { t: "3. Soggetto erogatore", c: "Lo STUDIO è l’erogatore della soluzione di Firma Elettronica Avanzata (art 55, comma 2, lettera a del DPCM 22-02-2013)." },
     { t: "4. Oggetto del Servizio", c: "Le presenti condizioni disciplinano l’erogazione gratuita e facoltativa di una “FEA” da parte dello STUDIO ai propri Pazienti. La Firma Elettronica FEA garantisce l'identificazione del firmatario, la connessione univoca della firma, il controllo esclusivo e l’integrità del documento." },
     { t: "5. Attivazione del servizio", c: "L’attivazione è subordinata all’adesione del Paziente, identificato dallo STUDIO mediante lo scatto di una foto dal cliente munito di un suo documento d’identità valido." },
-    { t: "6. Descrizione sistema", c: "La soluzione adottata garantisce l'immodificabilità tramite hash del documento e certificato tecnico PAdES. Una copia completa sarà recapitiata via Mail." },
-    { t: "7. Copertura assicurativa", c: "Lo STUDIO dispone di adeguata polizza assicurativa stipulata con primaria assicurazione abilitata." },
-    { t: "8. Limiti d'uso", c: "La FEA può essere utilizzata solo per i rapporti giuridici che intercorrono tra il Paziente ed il Soggetto Erogatore." },
-    { t: "9. Foro Competente", c: "Si individua quale Foro Esclusivo quello di MILANO." }
+    { t: "6. Descrizione sistema", c: "La soluzione adottata garantisce l'immodificabilità tramite hash del documento e certificato tecnico PAdES. Una copia completa sarà recapitiata via Mail." }
   ]
 
   let currY = height - 120
   sections.forEach(s => {
+    page.drawText(s.t, { x: 60, y: currY, size: 10, font: fontBold })
+    currY -= 12
+    page.drawText(s.c, { x: 60, y: currY, size: 9, font, maxWidth: width - 110, lineHeight: 11 })
+    const lines = font.widthOfTextAtSize(s.c, 9) / (width - 110)
+    currY -= (Math.ceil(lines) * 11) + 8
+  })
+
+  // Identification Photo (Added)
+  if (idPhotoB) {
+    try {
+      const idImg = await pdfDoc.embedJpg(idPhotoB)
+      const imgW = 120, imgH = 90
+      page.drawText("Foto Identificativa (Riconoscimento de Visu):", { x: 60, y: currY - 10, size: 10, font: fontBold })
+      page.drawImage(idImg, { x: 60, y: currY - 110, width: imgW, height: imgH })
+      currY -= 125
+    } catch (e) { console.error("Error embedding photo:", e) }
+  }
+
+  // Remaining Sections A
+  const restA = [
+    { t: "7. Copertura assicurativa", c: "Lo STUDIO dispone di adeguata polizza assicurativa stipulata con primaria assicurazione abilitata." },
+    { t: "8. Limiti d'uso", c: "La FEA può essere utilizzata solo per i rapporti giuridici che intercorrono tra il Paziente ed il Soggetto Erogatore." },
+    { t: "9. Foro Competente", c: "Si individua quale Foro Esclusivo quello di MILANO." }
+  ]
+  restA.forEach(s => {
     page.drawText(s.t, { x: 60, y: currY, size: 10, font: fontBold })
     currY -= 12
     page.drawText(s.c, { x: 60, y: currY, size: 9, font, maxWidth: width - 110, lineHeight: 11 })
@@ -145,7 +167,6 @@ export async function generatePrivacyConsentPDF(patient: any, patB: ArrayBuffer 
   page.drawLine({ start: { x: 260, y: currY - 2 }, end: { x: 350, y: currY - 2 }, thickness: 0.5 })
 
   currY -= 30
-  // Checkbox box
   page.drawRectangle({ x: 55, y: currY - 5, width: 12, height: 12, borderWidth: 1, borderColor: rgb(0,0,0) })
   page.drawText("X", { x: 58, y: currY - 2, size: 10, font: fontBold })
   

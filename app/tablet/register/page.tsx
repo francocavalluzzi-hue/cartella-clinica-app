@@ -97,8 +97,9 @@ export default function GuestRegisterWizard() {
       const finalPdfBytes = await pdfDoc.save()
       const fileNameAnagrafica = `ANAGRAFICHE/${form.surname}_${form.name}_Scheda_Anagrafica.pdf`.replace(/\s+/g, "_")
 
-      // 4. Genera PDF Modulo FEA (Replica ufficiale)
-      const privacyPdfBytes = await generatePrivacyConsentPDF(patientData, patSig)
+      // 4. Genera PDF Modulo FEA (Replica ufficiale con foto)
+      const photoBytes = idPhoto ? await fetch(idPhoto).then(r => r.arrayBuffer()) : null
+      const privacyPdfBytes = await generatePrivacyConsentPDF(patientData, patSig, photoBytes)
       const fileNamePrivacy = `CONSENSI/${form.surname}_${form.name}_Modulo_FEA.pdf`.replace(/\s+/g, "_")
 
       // 5. Upload PDFs
