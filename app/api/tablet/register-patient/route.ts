@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 
-// Usiamo la service_role key lato server per bypassare le RLS
-// Questa chiave NON viene mai esposta al client
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Funzione per ottenere il client admin solo quando serve
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) {
+    throw new Error("Missing Supabase Admin environment variables.")
+  }
+  return createClient(url, key)
+}
 
 export async function POST(request: Request) {
   try {
@@ -33,6 +36,8 @@ export async function POST(request: Request) {
       cap: cap || "",
       country: country || "",
     }
+
+    const supabaseAdmin = getSupabaseAdmin()
 
     const { data, error } = await supabaseAdmin
       .from("patients")
