@@ -225,7 +225,7 @@ export default function DocumentsPage() {
       </aside>
 
       {/* Main Area */}
-      <main style={{ padding: "32px", overflowY: "auto", background: "var(--bg-content)" }}>
+      <main style={{ padding: "32px", overflowY: "auto", background: "var(--content-bg)" }}>
         {!selectedModulo ? (
           <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--text-muted)" }}>
             <div style={{ width: "80px", height: "80px", borderRadius: "20px", background: "var(--primary-light)", color: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>

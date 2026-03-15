@@ -2,25 +2,25 @@
 
 :root {
   /* Cosmedic Palette */
-  --primary: #0d9488;
-  --primary-hover: #0f766e;
-  --primary-light: #f0fdfa;
+  --primary: #0f766e; /* Più scuro e incisivo */
+  --primary-hover: #115e59;
+  --primary-light: #ccfbf1; /* Leggermente più visibile dello sfondo bianco */
   
-  --sidebar-bg: #111827;
-  --sidebar-text: #9ca3af;
+  --sidebar-bg: #020617; /* Quasi nero */
+  --sidebar-text: #cbd5e1;
   --sidebar-active: #ffffff;
-  --sidebar-hover: #1f2937;
+  --sidebar-hover: #1e293b;
   
-  --content-bg: #f9fafb;
+  --content-bg: #f1f5f9; /* Grigio-blu chiaro per staccarlo nettamente dai box bianchi */
   --card-bg: #ffffff;
-  --border: #d1d5db; /* Eravamo su e5e7eb, lo rendo più scuro e "croccante" */
+  --border: #94a3b8; /* Bordo grigio medio, chiaramente visibile */
   
-  --text-main: #030712; /* Più vicino al nero assoluto invece che grigio scuro */
-  --text-muted: #4b5563; /* Eravamo su 6b7280, scuro e più leggibile */
+  --text-main: #000000; /* Nero assoluto */
+  --text-muted: #334155; /* Grigio molto scuro, altissima leggibilità */
   
-  --success: #16a34a; /* Più scuro e leggibile su bianco */
-  --warning: #d97706;
-  --danger: #dc2626;
+  --success: #15803d; /* Verde scuro deciso */
+  --warning: #b45309;
+  --danger: #b91c1c;
 }
 
 * {
