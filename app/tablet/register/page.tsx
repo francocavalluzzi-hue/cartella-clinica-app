@@ -23,7 +23,8 @@ import {
 import { BUCKET_URL, MODULI } from "../../../lib/constants"
 import { 
   sigToBytes, 
-  fillSchedaAnagrafica 
+  fillSchedaAnagrafica,
+  generatePrivacyConsentPDF 
 } from "../../../lib/pdfUtils"
 
 export default function GuestRegisterWizard() {
@@ -78,22 +79,26 @@ export default function GuestRegisterWizard() {
       await fillSchedaAnagrafica(pdfDoc, patientData, patB, null) // Niente firma dottore in questa fase
       
       const finalPdfBytes = await pdfDoc.save()
-      const fileName = `${form.surname}_${form.name}_Scheda_Anagrafica.pdf`
+      const fileNameAnagrafica = `ANAGRAFICHE/${form.surname}_${form.name}_Scheda_Anagrafica.pdf`
 
-      // 3. Upload PDF
-      const { error: uploadError } = await supabase.storage.from("FIRME_PAZIENTI").upload(fileName, finalPdfBytes, {
-        contentType: "application/pdf",
-        upsert: true
-      })
-      if (uploadError) throw uploadError
+      // 3. Genera PDF Consenso Privacy
+      const privacyPdfBytes = await generatePrivacyConsentPDF(patientData, patB)
+      const fileNamePrivacy = `CONSENSI/${form.surname}_${form.name}_Consenso_Privacy.pdf`
 
-      // 4. Salva il link nel database per farlo vedere al dottore
-      const { data: { publicUrl } } = supabase.storage.from("FIRME_PAZIENTI").getPublicUrl(fileName)
-      await supabase.from("documents").insert([{ 
-        patient_id: newPatientId, 
-        document_type: modulo.id, 
-        file_url: publicUrl 
-      }])
+      // 4. Upload PDFs
+      await Promise.all([
+        supabase.storage.from("FIRME_PAZIENTI").upload(fileNameAnagrafica, finalPdfBytes, { contentType: "application/pdf", upsert: true }),
+        supabase.storage.from("FIRME_PAZIENTI").upload(fileNamePrivacy, privacyPdfBytes, { contentType: "application/pdf", upsert: true })
+      ])
+
+      // 5. Salva i link nel database
+      const { data: q1 } = supabase.storage.from("FIRME_PAZIENTI").getPublicUrl(fileNameAnagrafica)
+      const { data: q2 } = supabase.storage.from("FIRME_PAZIENTI").getPublicUrl(fileNamePrivacy)
+      
+      await supabase.from("documents").insert([
+        { patient_id: newPatientId, document_type: 0, file_url: q1.publicUrl },
+        { patient_id: newPatientId, document_type: 8, file_url: q2.publicUrl } // Usiamo ID 8 per la privacy
+      ])
 
       setStep(3) // Success
     } catch (err: any) {

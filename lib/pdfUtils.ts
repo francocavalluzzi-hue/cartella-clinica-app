@@ -84,3 +84,36 @@ export async function fillChirurgiaAmbulatoriale(pdfDoc: PDFDocument, patient: a
   if (patient) { p1.drawText(`${patient.name || ""} ${patient.surname || ""}`, { x: 152, y: H - 193, size: fs, font, color: black }) }
   const sw = 100, sh = 18; if (docB) p1.drawImage(await embedSig(pdfDoc, docB), { x: 380, y: 188, width: sw, height: sh })
 }
+
+export async function generatePrivacyConsentPDF(patient: any, patB: ArrayBuffer | null) {
+  const pdfDoc = await PDFDocument.create()
+  const page = pdfDoc.addPage([595.28, 841.89]) // A4
+  const font = await pdfDoc.embedStandardFont(StandardFonts.Helvetica)
+  const fontBold = await pdfDoc.embedStandardFont(StandardFonts.HelveticaBold)
+  const { width, height } = page.getSize()
+
+  page.drawText("Consenso al trattamento dati", { x: 50, y: height - 50, size: 18, font: fontBold })
+  page.drawText("Leggi l'informativa e firma nel riquadro sottostante.", { x: 50, y: height - 70, size: 12, font })
+
+  const text = `Ai sensi del Regolamento UE 2016/679 (GDPR), il sottoscritto ${patient.name} ${patient.surname} dichiara di aver preso visione dell'informativa sul trattamento dei dati personali...
+
+1. I dati verranno trattati esclusivamente per finalità di diagnosi e cura.
+
+2. I dati non saranno comunicati a terzi senza esplicito consenso.
+
+3. È possibile richiedere la cancellazione o rettifica in qualsiasi momento.
+
+Acconsento al trattamento dei dati sensibili necessari per l'esecuzione delle prestazioni mediche richieste.`
+
+  page.drawText(text, { x: 50, y: height - 120, size: 11, font, maxWidth: width - 100, lineHeight: 16 })
+
+  if (patB) {
+    const patImg = await pdfDoc.embedPng(patB)
+    page.drawText("Firma del Paziente:", { x: 50, y: height - 350, size: 12, font: fontBold })
+    page.drawImage(patImg, { x: 50, y: height - 420, width: 150, height: 40 })
+    page.drawText(`${patient.name} ${patient.surname}`, { x: 50, y: height - 435, size: 10, font })
+    page.drawText(`Data: ${new Date().toLocaleDateString("it-IT")}`, { x: width - 150, y: height - 435, size: 10, font })
+  }
+
+  return pdfDoc.save()
+}

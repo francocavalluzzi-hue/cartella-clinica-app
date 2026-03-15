@@ -12,6 +12,7 @@ export const MODULI = [
   { id: 5, nome: "Ricetta Prescrizioni", file: "5%20Ricetta%20PRESCRIZIONE%20medica%20dimissione.pdf", quando: "Post-intervento" },
   { id: 6, nome: "Tabella Medicazioni", file: "6%20Tabella%20Medicazioni.pdf", quando: "Follow-up" },
   { id: 7, nome: "Chirurgia Ambulatoriale", file: "7%20Chirurgia%20ambulatoriale.pdf", quando: "Pre-intervento" },
+  { id: 8, nome: "Consenso Privacy", file: "", quando: "Registrazione" },
 ]
 
 export const INTERVENTO_TYPES = [
