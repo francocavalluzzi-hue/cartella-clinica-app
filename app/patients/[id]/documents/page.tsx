@@ -289,7 +289,7 @@ export default function DocumentsPage() {
                             <Trash2 size={14} /> Cancella
                           </button>
                         </div>
-                        <div style={{ background: "#f8fafc", borderRadius: "10px", border: "1px dashed var(--border)", overflow: "hidden" }}>
+                        <div style={{ background: "#ffffff", borderRadius: "10px", border: "1px solid #cbd5e1", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.02)", overflow: "hidden" }}>
                           <SignatureCanvas ref={ref} canvasProps={{ style: { width: "100%", height: "80px" } }} />
                         </div>
                       </div>
