@@ -92,27 +92,38 @@ export async function generatePrivacyConsentPDF(patient: any, patB: ArrayBuffer 
   const fontBold = await pdfDoc.embedStandardFont(StandardFonts.HelveticaBold)
   const { width, height } = page.getSize()
 
-  page.drawText("Consenso al trattamento dati", { x: 50, y: height - 50, size: 18, font: fontBold })
-  page.drawText("Leggi l'informativa e firma nel riquadro sottostante.", { x: 50, y: height - 70, size: 12, font })
+  page.drawText("Modulo di Adesione al servizio di Firma Elettronica Avanzata (“FEA”)", { x: 50, y: height - 50, size: 14, font: fontBold })
+  page.drawText("A) Condizioni relative al servizio di Firma Elettronica Avanzata (“FEA”)", { x: 50, y: height - 70, size: 11, font: fontBold })
 
-  const text = `Ai sensi del Regolamento UE 2016/679 (GDPR), il sottoscritto ${patient.name} ${patient.surname} dichiara di aver preso visione dell'informativa sul trattamento dei dati personali...
+  const text = `Premesse: Lo Studio COSMEDIC SRL (di seguito, “STUDIO”), per il tramite del partner realizzatore tecnologico B&B SOLUTIONS, ha introdotto un’innovativa soluzione informatica che consente al Cliente di sottoscrivere elettronicamente la documentazione Medica e contrattuale. La sottoscrizione dei documenti avviene mediante l’utilizzo di firma elettronica avanzata (FEA) cioè una modalità di firma che possiede i requisiti giuridici e informatici previsti dal Decreto Legislativo n. 82/2005 (Codice dell’Amministrazione Digitale - CAD) che nel DPCM del 22 Febbraio 2013.
 
-1. I dati verranno trattati esclusivamente per finalità di diagnosi e cura.
+Definizioni: Ai fini delle Condizioni, si intendono qui integralmente riportate e trascritte le definizioni contenute nel CAD, nonché quelle di cui alle Regole Tecniche.
 
-2. I dati non saranno comunicati a terzi senza esplicito consenso.
+Soggetto erogatore: Lo STUDIO è l’erogatore della soluzione di Firma Elettronica Avanzata.
 
-3. È possibile richiedere la cancellazione o rettifica in qualsiasi momento.
+Oggetto del Servizio: Le presenti condizioni disciplinano l’erogazione gratuita e facoltativa di una “FEA” da parte dello STUDIO ai propri Pazienti. La Firma Elettronica FEA garantisce l'identificazione del firmatario, la connessione univoca della firma, il controllo esclusivo del firmatario e l’integrità del documento.
 
-Acconsento al trattamento dei dati sensibili necessari per l'esecuzione delle prestazioni mediche richieste.`
+Attivazione del servizio: L’attivazione del Servizio è subordinata all’adesione del Paziente, previa identificazione de visu.
 
-  page.drawText(text, { x: 50, y: height - 120, size: 11, font, maxWidth: width - 100, lineHeight: 16 })
+Descrizione del sistema FEA: La soluzione adottata garantisce la non modificabilità del documento dopo la firma mediante certificato tecnico e hash PAdES. Il firmatario può ottenere copia del documento via Mail. I documenti sottoscritti hanno lo stesso valore dei documenti cartacei con firma autografa.
+
+Copertura assicurativa: Lo STUDIO dispone di adeguata polizza assicurativa come previsto dalla legge.
+
+Limiti d'uso: La FEA può essere utilizzata solo per i rapporti tra il Paziente e lo STUDIO.
+
+Foro Competente: Per le controversie si individua il Foro Esclusivo di MILANO.`
+
+  page.drawText(text, { x: 50, y: height - 100, size: 9, font, maxWidth: width - 100, lineHeight: 12 })
 
   if (patB) {
     const patImg = await pdfDoc.embedPng(patB)
-    page.drawText("Firma del Paziente:", { x: 50, y: height - 350, size: 12, font: fontBold })
-    page.drawImage(patImg, { x: 50, y: height - 420, width: 150, height: 40 })
-    page.drawText(`${patient.name} ${patient.surname}`, { x: 50, y: height - 435, size: 10, font })
-    page.drawText(`Data: ${new Date().toLocaleDateString("it-IT")}`, { x: width - 150, y: height - 435, size: 10, font })
+    page.drawText("Dichiarazione di accettazione all’utilizzo della Firma Elettronica Avanzata:", { x: 50, y: height - 420, size: 10, font: fontBold })
+    page.drawText(`Io sottoscritto ${patient.name} ${patient.surname}, letta l'informativa sopra riportata, accetto le condizioni del servizio.`, { x: 50, y: height - 435, size: 9, font, maxWidth: width - 100 })
+    
+    page.drawText("Firma del Paziente:", { x: 50, y: height - 470, size: 10, font: fontBold })
+    page.drawImage(patImg, { x: 50, y: height - 520, width: 150, height: 40 })
+    page.drawText(`${patient.name} ${patient.surname}`, { x: 50, y: height - 535, size: 10, font })
+    page.drawText(`Data: ${new Date().toLocaleDateString("it-IT")}`, { x: width - 150, y: height - 535, size: 10, font })
   }
 
   return pdfDoc.save()

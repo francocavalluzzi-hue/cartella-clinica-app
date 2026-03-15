@@ -245,12 +245,12 @@ export default function GuestRegisterWizard() {
           {step === 2 && (
             <div style={{ background: "white", borderRadius: "24px", padding: "40px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0" }}>
               <div style={{ textAlign: "center", marginBottom: "32px" }}>
-                <h1 style={{ fontSize: "24px", fontWeight: 800, color: "#0f172a" }}>Consenso al trattamento dati</h1>
-                <p style={{ color: "#64748b", fontSize: "14px" }}>Leggi l'informativa e firma nel riquadro sottostante.</p>
+                <h1 style={{ fontSize: "24px", fontWeight: 800, color: "#0f172a" }}>Modulo di Adesione al servizio di Firma Elettronica Avanzata (“FEA”)</h1>
+                <p style={{ color: "#64748b", fontSize: "14px" }}>Leggi le condizioni e firma nel riquadro sottostante.</p>
               </div>
 
               <div style={{ 
-                height: "200px", 
+                height: "300px", 
                 overflowY: "auto", 
                 background: "#f8fafc", 
                 padding: "20px", 
@@ -261,11 +261,16 @@ export default function GuestRegisterWizard() {
                 color: "#475569",
                 marginBottom: "32px"
               }}>
-                <p>Ai sensi del Regolamento UE 2016/679 (GDPR), il sottoscritto <strong>{form.name} {form.surname}</strong> dichiara di aver preso visione dell'informativa sul trattamento dei dati personali...</p>
-                <p style={{ marginTop: "12px" }}>1. I dati verranno trattati esclusivamente per finalità di diagnosi e cura.</p>
-                <p>2. I dati non saranno comunicati a terzi senza esplicito consenso.</p>
-                <p>3. È possibile richiedere la cancellazione o rettifica in qualsiasi momento.</p>
-                <p style={{ marginTop: "12px" }}>Acconsento al trattamento dei dati sensibili necessari per l'esecuzione delle prestazioni mediche richieste.</p>
+                <h4 style={{ fontWeight: 700, marginBottom: "8px" }}>A) Condizioni relative al servizio di Firma Elettronica Avanzata (“FEA”)</h4>
+                <p><strong>Premesse:</strong> Lo Studio COSMEDIC SRL (di seguito, “STUDIO”), per il tramite del partner realizzatore tecnologico B&B SOLUTIONS, ha introdotto un’innovativa soluzione informatica che consente al Cliente di sottoscrivere elettronicamente la documentazione Medica e contrattuale. La sottoscrizione dei documenti avviene mediante l’utilizzo di firma elettronica avanzata (FEA) cioè una modalità di firma che possiede i requisiti giuridici e informatici previsti dal Decreto Legislativo n. 82/2005 (Codice dell’Amministrazione Digitale - CAD) che nel DPCM del 22 Febbraio 2013.</p>
+                <p style={{ marginTop: "8px" }}><strong>Definizioni:</strong> Ai fini delle Condizioni, si intendono qui integralmente riportate e trascritte le definizioni contenute nel CAD, nonché quelle di cui alle Regole Tecniche.</p>
+                <p style={{ marginTop: "8px" }}><strong>Soggetto erogatore:</strong> Lo STUDIO è l’erogatore della soluzione di Firma Elettronica Avanzata.</p>
+                <p style={{ marginTop: "8px" }}><strong>Oggetto del Servizio:</strong> Le presenti condizioni disciplinano l’erogazione gratuita e facoltativa di una “FEA” da parte dello STUDIO ai propri Pazienti. La Firma Elettronica FEA adottata dallo STUDIO garantisce il rispetto di quanto previsto dal DPCM del 22-02-2013 e garantisce l’identificazione del firmatario, la connessione univoca della firma, il controllo esclusivo del firmatario e l’integrità del documento.</p>
+                <p style={{ marginTop: "8px" }}><strong>Attivazione del servizio:</strong> L’attivazione del Servizio è subordinata all’adesione del Paziente. Questi dovrà essere preliminarmente identificato dallo STUDIO mediante identificazione de visu.</p>
+                <p style={{ marginTop: "8px" }}><strong>Descrizione del sistema FEA:</strong> La soluzione adottata garantisce la non modificabilità del documento dopo l’apposizione della firma mediante certificato tecnico e hash PAdES. Il firmatario può ottenere evidenza di quanto sottoscritto via Mail.</p>
+                <p style={{ marginTop: "8px" }}><strong>Copertura assicurativa:</strong> Lo STUDIO dispone di adeguata polizza assicurativa stipulata con primaria assicurazione.</p>
+                <p style={{ marginTop: "8px" }}><strong>Limiti d’uso:</strong> La FEA può essere utilizzata solo per i rapporti giuridici che intercorrono tra il Paziente ed il Soggetto Erogatore (STUDIO).</p>
+                <p style={{ marginTop: "8px" }}><strong>Foro Competente:</strong> Si individua quale Foro Esclusivo quello di MILANO.</p>
               </div>
 
               <div style={{ background: "white", borderRadius: "16px", padding: "24px", border: "2px dashed #cbd5e1" }}>
