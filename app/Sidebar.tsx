@@ -15,8 +15,8 @@ import {
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: "/" },
   { name: "Pazienti", icon: Users, href: "/patients" },
-  { name: "Appuntamenti", icon: Calendar, href: "/appointments" },
-  { name: "Report", icon: BarChart3, href: "/reports" },
+  { name: "Appuntamenti", icon: Calendar, href: "#", comingSoon: true },
+  { name: "Report", icon: BarChart3, href: "#", comingSoon: true },
 ]
 
 export default function Sidebar() {
@@ -62,6 +62,12 @@ export default function Sidebar() {
             <Link 
               key={item.name} 
               href={item.href} 
+              onClick={(e) => {
+                if (item.comingSoon) {
+                  e.preventDefault()
+                  alert("Funzionalità in arrivo presto!")
+                }
+              }}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -74,7 +80,8 @@ export default function Sidebar() {
                 marginBottom: "4px",
                 fontSize: "14px",
                 fontWeight: isActive ? 600 : 400,
-                transition: "all 0.2s"
+                transition: "all 0.2s",
+                opacity: item.comingSoon ? 0.6 : 1
               }}
             >
               <item.icon size={20} />
