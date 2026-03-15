@@ -92,38 +92,73 @@ export async function generatePrivacyConsentPDF(patient: any, patB: ArrayBuffer 
   const fontBold = await pdfDoc.embedStandardFont(StandardFonts.HelveticaBold)
   const { width, height } = page.getSize()
 
-  page.drawText("Modulo di Adesione al servizio di Firma Elettronica Avanzata (“FEA”)", { x: 50, y: height - 50, size: 14, font: fontBold })
-  page.drawText("A) Condizioni relative al servizio di Firma Elettronica Avanzata (“FEA”)", { x: 50, y: height - 70, size: 11, font: fontBold })
+  const centerX = (text: string, size: number, f: any) => {
+    const tw = f.widthOfTextAtSize(text, size)
+    return (width - tw) / 2
+  }
 
-  const text = `Premesse: Lo Studio COSMEDIC SRL (di seguito, “STUDIO”), per il tramite del partner realizzatore tecnologico B&B SOLUTIONS, ha introdotto un’innovativa soluzione informatica che consente al Cliente di sottoscrivere elettronicamente la documentazione Medica e contrattuale. La sottoscrizione dei documenti avviene mediante l’utilizzo di firma elettronica avanzata (FEA) cioè una modalità di firma che possiede i requisiti giuridici e informatici previsti dal Decreto Legislativo n. 82/2005 (Codice dell’Amministrazione Digitale - CAD) che nel DPCM del 22 Febbraio 2013.
+  // Header
+  const title = "Modulo di Adesione al servizio di Firma Elettronica Avanzata (“FEA”)"
+  page.drawText(title, { x: centerX(title, 16, fontBold), y: height - 50, size: 16, font: fontBold })
 
-Definizioni: Ai fini delle Condizioni, si intendono qui integralmente riportate e trascritte le definizioni contenute nel CAD, nonché quelle di cui alle Regole Tecniche.
+  // Section A
+  page.drawText("A) Condizioni relative al servizio di Firma Elettronica Avanzata (“FEA”)", { x: 50, y: height - 90, size: 12, font: fontBold })
+  
+  const sections = [
+    { t: "1. Premesse", c: "Lo Studio COSMEDIC SRL (di seguito, “STUDIO”), per il tramite del partner realizzatore tecnologico B&B SOLUTIONS, ha introdotto un’innovativa soluzione informatica che consente al Cliente di sottoscrivere elettronicamente la documentazione Medica e contrattuale. La sottoscrizione dei documenti avviene mediante l’utilizzo di firma elettronica avanzata (FEA) cioè una modalità di firma che possiede i requisiti giuridici e informatici previsti dal Decreto Legislativo n. 82/2005 (CAD) e dal DPCM del 22 Febbraio 2013." },
+    { t: "2. Definizioni", c: "Ai fini delle Condizioni, si intendono qui integralmente riportate e trascritte le definizioni contenute nel CAD, nonché quelle di cui alle Regole Tecniche." },
+    { t: "3. Soggetto erogatore", c: "Lo STUDIO è l’erogatore della soluzione di Firma Elettronica Avanzata (art 55, comma 2, lettera a del DPCM 22-02-2013)." },
+    { t: "4. Oggetto del Servizio", c: "Le presenti condizioni disciplinano l’erogazione gratuita e facoltativa di una “FEA” da parte dello STUDIO ai propri Pazienti. La Firma Elettronica FEA garantisce l'identificazione del firmatario, la connessione univoca della firma, il controllo esclusivo e l’integrità del documento." },
+    { t: "5. Attivazione del servizio", c: "L’attivazione è subordinata all’adesione del Paziente, identificato dallo STUDIO mediante lo scatto di una foto dal cliente munito di un suo documento d’identità valido." },
+    { t: "6. Descrizione sistema", c: "La soluzione adottata garantisce l'immodificabilità tramite hash del documento e certificato tecnico PAdES. Una copia completa sarà recapitiata via Mail." },
+    { t: "7. Copertura assicurativa", c: "Lo STUDIO dispone di adeguata polizza assicurativa stipulata con primaria assicurazione abilitata." },
+    { t: "8. Limiti d'uso", c: "La FEA può essere utilizzata solo per i rapporti giuridici che intercorrono tra il Paziente ed il Soggetto Erogatore." },
+    { t: "9. Foro Competente", c: "Si individua quale Foro Esclusivo quello di MILANO." }
+  ]
 
-Soggetto erogatore: Lo STUDIO è l’erogatore della soluzione di Firma Elettronica Avanzata.
+  let currY = height - 120
+  sections.forEach(s => {
+    page.drawText(s.t, { x: 60, y: currY, size: 10, font: fontBold })
+    currY -= 12
+    page.drawText(s.c, { x: 60, y: currY, size: 9, font, maxWidth: width - 110, lineHeight: 11 })
+    const lines = font.widthOfTextAtSize(s.c, 9) / (width - 110)
+    currY -= (Math.ceil(lines) * 11) + 8
+  })
 
-Oggetto del Servizio: Le presenti condizioni disciplinano l’erogazione gratuita e facoltativa di una “FEA” da parte dello STUDIO ai propri Pazienti. La Firma Elettronica FEA garantisce l'identificazione del firmatario, la connessione univoca della firma, il controllo esclusivo del firmatario e l’integrità del documento.
+  // Section B
+  currY -= 10
+  page.drawText("B) Adesione al servizio di Firma Elettronica Avanzata (a cura del Cliente)", { x: 50, y: currY, size: 12, font: fontBold })
+  currY -= 25
 
-Attivazione del servizio: L’attivazione del Servizio è subordinata all’adesione del Paziente, previa identificazione de visu.
+  page.drawText("Il sottoscritto", { x: 50, y: currY, size: 10, font })
+  const nameText = `${patient.surname?.toUpperCase()} ${patient.name?.toUpperCase()}`
+  page.drawText(nameText, { x: 120, y: currY, size: 10, font: fontBold })
+  page.drawLine({ start: { x: 120, y: currY - 2 }, end: { x: 300, y: currY - 2 }, thickness: 0.5 })
 
-Descrizione del sistema FEA: La soluzione adottata garantisce la non modificabilità del documento dopo la firma mediante certificato tecnico e hash PAdES. Il firmatario può ottenere copia del documento via Mail. I documenti sottoscritti hanno lo stesso valore dei documenti cartacei con firma autografa.
+  currY -= 20
+  page.drawText("Nato a", { x: 50, y: currY, size: 10, font })
+  page.drawText(patient.birth_place || "", { x: 90, y: currY, size: 10, font })
+  page.drawLine({ start: { x: 90, y: currY - 2 }, end: { x: 200, y: currY - 2 }, thickness: 0.5 })
+  
+  page.drawText("il giorno", { x: 210, y: currY, size: 10, font })
+  page.drawText(patient.birthdate || "", { x: 260, y: currY, size: 10, font })
+  page.drawLine({ start: { x: 260, y: currY - 2 }, end: { x: 350, y: currY - 2 }, thickness: 0.5 })
 
-Copertura assicurativa: Lo STUDIO dispone di adeguata polizza assicurativa come previsto dalla legge.
-
-Limiti d'uso: La FEA può essere utilizzata solo per i rapporti tra il Paziente e lo STUDIO.
-
-Foro Competente: Per le controversie si individua il Foro Esclusivo di MILANO.`
-
-  page.drawText(text, { x: 50, y: height - 100, size: 9, font, maxWidth: width - 100, lineHeight: 12 })
+  currY -= 30
+  // Checkbox box
+  page.drawRectangle({ x: 55, y: currY - 5, width: 12, height: 12, borderWidth: 1, borderColor: rgb(0,0,0) })
+  page.drawText("X", { x: 58, y: currY - 2, size: 10, font: fontBold })
+  
+  const enrollmentText = "Chiede di poter aderire al servizio di Firma Elettronica avanzata (“FEA”), adottato dallo STUDIO, disciplinato dal presente documento, dal Decreto Legislativo 7 marzo 2005, n. 82, e s.m.i., recante Codice dell’Amministrazione Digitale."
+  page.drawText(enrollmentText, { x: 80, y: currY + 4, size: 8.5, font, maxWidth: width - 130, lineHeight: 10 })
 
   if (patB) {
     const patImg = await pdfDoc.embedPng(patB)
-    page.drawText("Dichiarazione di accettazione all’utilizzo della Firma Elettronica Avanzata:", { x: 50, y: height - 420, size: 10, font: fontBold })
-    page.drawText(`Io sottoscritto ${patient.name} ${patient.surname}, letta l'informativa sopra riportata, accetto le condizioni del servizio.`, { x: 50, y: height - 435, size: 9, font, maxWidth: width - 100 })
-    
-    page.drawText("Firma del Paziente:", { x: 50, y: height - 470, size: 10, font: fontBold })
-    page.drawImage(patImg, { x: 50, y: height - 520, width: 150, height: 40 })
-    page.drawText(`${patient.name} ${patient.surname}`, { x: 50, y: height - 535, size: 10, font })
-    page.drawText(`Data: ${new Date().toLocaleDateString("it-IT")}`, { x: width - 150, y: height - 535, size: 10, font })
+    currY -= 70
+    page.drawText("Firma del Paziente per accettazione:", { x: 350, y: currY, size: 10, font: fontBold })
+    page.drawImage(patImg, { x: 350, y: currY - 45, width: 150, height: 40 })
+    page.drawText(`${patient.name} ${patient.surname}`, { x: 350, y: currY - 58, size: 9, font })
+    page.drawText(`Data: ${new Date().toLocaleDateString("it-IT")}`, { x: 50, y: currY - 58, size: 9, font })
   }
 
   return pdfDoc.save()

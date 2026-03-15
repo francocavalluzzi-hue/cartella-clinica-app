@@ -18,7 +18,10 @@ import {
   Home,
   MapPin,
   Calendar,
-  Fingerprint
+  Fingerprint,
+  Camera,
+  RefreshCw,
+  Image as ImageIcon
 } from "lucide-react"
 import { BUCKET_URL, MODULI } from "../../../lib/constants"
 import { 
@@ -36,6 +39,7 @@ export default function GuestRegisterWizard() {
     name: "",
     surname: "",
     birthdate: "",
+    birth_place: "",
     fiscal_code: "",
     phone: "",
     email: "",
@@ -43,17 +47,23 @@ export default function GuestRegisterWizard() {
     city: "",
   })
 
+  const [idPhoto, setIdPhoto] = useState<string | null>(null)
+  const [feaAccepted, setFeaAccepted] = useState(false)
+
   const patSigRef = useRef<any>(null)
 
   const nextStep = () => {
     if (step === 1 && (!form.name || !form.surname)) return alert("Nome e Cognome sono obbligatori")
+    if (step === 2 && !idPhoto) return alert("Per favore scatta una foto identificativa prima di procedere")
+    if (step === 3 && !feaAccepted) return alert("Devi accettare i termini di adesione FEA per procedere")
     setStep(prev => prev + 1)
   }
   
   const prevStep = () => setStep(prev => prev - 1)
 
   async function handleSubmit() {
-    if (patSigRef.current?.isEmpty()) return alert("La firma è obbligatoria per accettare il consenso dei dati")
+    const patSig = await sigToBytes(patSigRef)
+    if (!patSig) return alert("Per favore firma per accettazione")
     
     setSaving(true)
     try {
@@ -69,40 +79,46 @@ export default function GuestRegisterWizard() {
       const newPatientId = regResult.id
       const patientData = { ...form, id: newPatientId }
 
-      // 2. Genera PDF Scheda Anagrafica con Firma
-      const patB = await sigToBytes(patSigRef)
+      // 2. Carica Foto Identificativa (Soggetto Erogatore requirement)
+      if (idPhoto) {
+        const photoBlob = await fetch(idPhoto).then(r => r.blob())
+        const photoPath = `ID_DOCS/${form.surname}_${form.name}_ID.jpg`.replace(/\s+/g, "_")
+        await supabase.storage.from("FIRME_PAZIENTI").upload(photoPath, photoBlob, { contentType: "image/jpeg", upsert: true })
+      }
+
+      // 3. Genera PDF Scheda Anagrafica con Firma
       const modulo = MODULI.find(m => m.id === 0)! // Scheda Anagrafica
       const pdfRes = await fetch(`${BUCKET_URL}/${modulo.file}`)
       const pdfBytes = await pdfRes.arrayBuffer()
       const pdfDoc = await PDFDocument.load(pdfBytes)
 
-      await fillSchedaAnagrafica(pdfDoc, patientData, patB, null) // Niente firma dottore in questa fase
+      await fillSchedaAnagrafica(pdfDoc, patientData, patSig, null)
       
       const finalPdfBytes = await pdfDoc.save()
-      const fileNameAnagrafica = `ANAGRAFICHE/${form.surname}_${form.name}_Scheda_Anagrafica.pdf`
+      const fileNameAnagrafica = `ANAGRAFICHE/${form.surname}_${form.name}_Scheda_Anagrafica.pdf`.replace(/\s+/g, "_")
 
-      // 3. Genera PDF Consenso Privacy
-      const privacyPdfBytes = await generatePrivacyConsentPDF(patientData, patB)
-      const fileNamePrivacy = `CONSENSI/${form.surname}_${form.name}_Consenso_Privacy.pdf`
+      // 4. Genera PDF Modulo FEA (Replica ufficiale)
+      const privacyPdfBytes = await generatePrivacyConsentPDF(patientData, patSig)
+      const fileNamePrivacy = `CONSENSI/${form.surname}_${form.name}_Modulo_FEA.pdf`.replace(/\s+/g, "_")
 
-      // 4. Upload PDFs
+      // 5. Upload PDFs
       await Promise.all([
         supabase.storage.from("FIRME_PAZIENTI").upload(fileNameAnagrafica, finalPdfBytes, { contentType: "application/pdf", upsert: true }),
         supabase.storage.from("FIRME_PAZIENTI").upload(fileNamePrivacy, privacyPdfBytes, { contentType: "application/pdf", upsert: true })
       ])
 
-      // 5. Salva i link nel database
+      // 6. Salva i link nel database
       const { data: q1 } = supabase.storage.from("FIRME_PAZIENTI").getPublicUrl(fileNameAnagrafica)
       const { data: q2 } = supabase.storage.from("FIRME_PAZIENTI").getPublicUrl(fileNamePrivacy)
       
       await supabase.from("documents").insert([
         { patient_id: newPatientId, document_type: 0, file_url: q1.publicUrl },
-        { patient_id: newPatientId, document_type: 8, file_url: q2.publicUrl } // Usiamo ID 8 per la privacy
+        { patient_id: newPatientId, document_type: 8, file_url: q2.publicUrl } 
       ])
 
-      setStep(3) // Success
+      setStep(5) // Success step
     } catch (err: any) {
-      alert(err.message)
+      alert("Errore salvataggio: " + err.message)
     } finally {
       setSaving(false)
     }
@@ -114,12 +130,14 @@ export default function GuestRegisterWizard() {
       <div style={{ padding: "32px 24px", background: "white", borderBottom: "1px solid #e2e8f0" }}>
         <div style={{ maxWidth: "800px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
           <div style={{ position: "absolute", top: "20px", left: "0", right: "0", height: "2px", background: "#e2e8f0", zIndex: 0 }}></div>
-          <div style={{ position: "absolute", top: "20px", left: "0", width: step === 1 ? "0%" : step === 2 ? "50%" : "100%", height: "2px", background: "var(--primary)", transition: "all 0.5s", zIndex: 0 }}></div>
+          <div style={{ position: "absolute", top: "20px", left: "0", width: `${((step - 1) / 4) * 100}%`, height: "2px", background: "var(--primary)", transition: "all 0.5s", zIndex: 0 }}></div>
           
           {[
             { n: 1, label: "I Tuoi Dati", icon: User },
-            { n: 2, label: "Privacy & Firma", icon: ShieldCheck },
-            { n: 3, label: "Completato", icon: CheckCircle2 }
+            { n: 2, label: "Identificazione", icon: Calendar }, // Placeholder for Camera Icon
+            { n: 3, label: "Adesione FEA", icon: ShieldCheck },
+            { n: 4, label: "Firma", icon: PenTool },
+            { n: 5, label: "Completato", icon: CheckCircle2 }
           ].map((s) => (
             <div key={s.n} style={{ zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
               <div style={{ 
@@ -176,6 +194,13 @@ export default function GuestRegisterWizard() {
                   </div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: 700, color: "#475569" }}>LUOGO DI NASCITA</label>
+                  <input type="text" value={form.birth_place} onChange={e => setForm({...form, birth_place: e.target.value})} placeholder="Es. Milano" style={{ width: "100%", padding: "16px", borderRadius: "14px", border: "1px solid #e2e8f0", fontSize: "16px", background: "#f8fafc" }} />
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "24px", marginTop: "24px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   <label style={{ fontSize: "13px", fontWeight: 700, color: "#475569" }}>CODICE FISCALE</label>
                   <div style={{ position: "relative" }}>
                     <Fingerprint size={18} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />
@@ -221,20 +246,7 @@ export default function GuestRegisterWizard() {
               <div style={{ marginTop: "48px", display: "flex", justifyContent: "flex-end" }}>
                 <button 
                   onClick={nextStep}
-                  style={{ 
-                    padding: "18px 48px", 
-                    borderRadius: "14px", 
-                    background: "var(--primary)", 
-                    color: "white", 
-                    border: "none", 
-                    fontWeight: 700, 
-                    fontSize: "16px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    boxShadow: "0 10px 15px -3px rgba(13, 148, 136, 0.3)",
-                    cursor: "pointer"
-                  }}
+                  style={{ padding: "18px 48px", borderRadius: "14px", background: "var(--primary)", color: "white", border: "none", fontWeight: 700, fontSize: "16px", display: "flex", alignItems: "center", gap: "10px", boxShadow: "0 10px 15px -3px rgba(13, 148, 136, 0.3)", cursor: "pointer" }}
                 >
                   Continua <ChevronRight size={20} />
                 </button>
@@ -245,45 +257,92 @@ export default function GuestRegisterWizard() {
           {step === 2 && (
             <div style={{ background: "white", borderRadius: "24px", padding: "40px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0" }}>
               <div style={{ textAlign: "center", marginBottom: "32px" }}>
-                <h1 style={{ fontSize: "24px", fontWeight: 800, color: "#0f172a" }}>Modulo di Adesione al servizio di Firma Elettronica Avanzata (“FEA”)</h1>
-                <p style={{ color: "#64748b", fontSize: "14px" }}>Leggi le condizioni e firma nel riquadro sottostante.</p>
+                <h1 style={{ fontSize: "24px", fontWeight: 800, color: "#0f172a" }}>Riconoscimento de Visu</h1>
+                <p style={{ color: "#64748b", fontSize: "16px" }}>Scatta una foto tenendo in mano il tuo documento d'identità valido.</p>
               </div>
 
-              <div style={{ 
-                height: "300px", 
-                overflowY: "auto", 
-                background: "#f8fafc", 
-                padding: "20px", 
-                borderRadius: "14px", 
-                border: "1px solid #e2e8f0",
-                fontSize: "13px",
-                lineHeight: "1.6",
-                color: "#475569",
-                marginBottom: "32px"
-              }}>
+              {!idPhoto ? (
+                <div style={{ position: "relative", borderRadius: "20px", overflow: "hidden", background: "#000", aspectRatio: "4/3", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                  <video autoPlay playsInline ref={v => { if (v && !v.srcObject) navigator.mediaDevices.getUserMedia({video:true}).then(s => v.srcObject = s) }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <div style={{ position: "absolute", bottom: "32px", left: "0", right: "0", display: "flex", justifyContent: "center" }}>
+                    <button onClick={() => {
+                        const v = document.querySelector("video"); if (!v) return;
+                        const c = document.createElement("canvas"); c.width = v.videoWidth; c.height = v.videoHeight;
+                        c.getContext("2d")?.drawImage(v, 0, 0); setIdPhoto(c.toDataURL("image/jpeg"));
+                        (v.srcObject as MediaStream)?.getTracks().forEach(t => t.stop());
+                      }}
+                      style={{ width: "70px", height: "70px", borderRadius: "50%", background: "white", border: "5px solid var(--primary)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    >
+                      <Camera size={32} color="var(--primary)" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ position: "relative", borderRadius: "20px", overflow: "hidden", background: "#f1f5f9", aspectRatio: "4/3" }}>
+                  <img src={idPhoto} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <button onClick={() => setIdPhoto(null)} style={{ position: "absolute", top: "16px", right: "16px", background: "rgba(0,0,0,0.5)", color: "white", border: "none", padding: "10px 20px", borderRadius: "10px", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <RefreshCw size={16} /> RIPROVA
+                  </button>
+                </div>
+              )}
+
+              <div style={{ marginTop: "40px", display: "flex", justifyContent: "space-between" }}>
+                <button onClick={prevStep} style={{ border: "none", background: "transparent", color: "#64748b", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px" }}>
+                  <ChevronLeft size={20} /> Indietro
+                </button>
+                <button onClick={nextStep} style={{ padding: "18px 48px", borderRadius: "14px", background: idPhoto ? "var(--primary)" : "#cbd5e1", color: "white", border: "none", fontWeight: 700, fontSize: "16px", cursor: idPhoto ? "pointer" : "not-allowed" }}>
+                  Continua <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div style={{ background: "white", borderRadius: "24px", padding: "40px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0" }}>
+              <div style={{ textAlign: "center", marginBottom: "32px" }}>
+                <h1 style={{ fontSize: "24px", fontWeight: 800, color: "#0f172a" }}>Modulo di Adesione FEA</h1>
+                <p style={{ color: "#64748b", fontSize: "14px" }}>Leggi le condizioni e conferma l'adesione.</p>
+              </div>
+
+              <div style={{ height: "300px", overflowY: "auto", background: "#f8fafc", padding: "20px", borderRadius: "14px", border: "1px solid #e2e8f0", fontSize: "13px", lineHeight: "1.6", color: "#475569", marginBottom: "32px" }}>
                 <h4 style={{ fontWeight: 700, marginBottom: "8px" }}>A) Condizioni relative al servizio di Firma Elettronica Avanzata (“FEA”)</h4>
-                <p><strong>Premesse:</strong> Lo Studio COSMEDIC SRL (di seguito, “STUDIO”), per il tramite del partner realizzatore tecnologico B&B SOLUTIONS, ha introdotto un’innovativa soluzione informatica che consente al Cliente di sottoscrivere elettronicamente la documentazione Medica e contrattuale. La sottoscrizione dei documenti avviene mediante l’utilizzo di firma elettronica avanzata (FEA) cioè una modalità di firma che possiede i requisiti giuridici e informatici previsti dal Decreto Legislativo n. 82/2005 (Codice dell’Amministrazione Digitale - CAD) che nel DPCM del 22 Febbraio 2013.</p>
-                <p style={{ marginTop: "8px" }}><strong>Definizioni:</strong> Ai fini delle Condizioni, si intendono qui integralmente riportate e trascritte le definizioni contenute nel CAD, nonché quelle di cui alle Regole Tecniche.</p>
-                <p style={{ marginTop: "8px" }}><strong>Soggetto erogatore:</strong> Lo STUDIO è l’erogatore della soluzione di Firma Elettronica Avanzata.</p>
-                <p style={{ marginTop: "8px" }}><strong>Oggetto del Servizio:</strong> Le presenti condizioni disciplinano l’erogazione gratuita e facoltativa di una “FEA” da parte dello STUDIO ai propri Pazienti. La Firma Elettronica FEA adottata dallo STUDIO garantisce il rispetto di quanto previsto dal DPCM del 22-02-2013 e garantisce l’identificazione del firmatario, la connessione univoca della firma, il controllo esclusivo del firmatario e l’integrità del documento.</p>
-                <p style={{ marginTop: "8px" }}><strong>Attivazione del servizio:</strong> L’attivazione del Servizio è subordinata all’adesione del Paziente. Questi dovrà essere preliminarmente identificato dallo STUDIO mediante identificazione de visu.</p>
-                <p style={{ marginTop: "8px" }}><strong>Descrizione del sistema FEA:</strong> La soluzione adottata garantisce la non modificabilità del documento dopo l’apposizione della firma mediante certificato tecnico e hash PAdES. Il firmatario può ottenere evidenza di quanto sottoscritto via Mail.</p>
-                <p style={{ marginTop: "8px" }}><strong>Copertura assicurativa:</strong> Lo STUDIO dispone di adeguata polizza assicurativa stipulata con primaria assicurazione.</p>
-                <p style={{ marginTop: "8px" }}><strong>Limiti d’uso:</strong> La FEA può essere utilizzata solo per i rapporti giuridici che intercorrono tra il Paziente ed il Soggetto Erogatore (STUDIO).</p>
-                <p style={{ marginTop: "8px" }}><strong>Foro Competente:</strong> Si individua quale Foro Esclusivo quello di MILANO.</p>
+                <p><strong>Premesse:</strong> Lo Studio COSMEDIC SRL (di seguito, “STUDIO”), per il tramite del partner tecnologico B&B SOLUTIONS, ha introdotto un’innovativa soluzione informatica che consente al Cliente di sottoscrivere elettronicamente la documentazione Medica e contrattuale...</p>
+                <p style={{ marginTop: "8px" }}><strong>Descrizione sistema:</strong> La soluzione adottata garantisce l'identificazione, la connessione univoca e l'integrità del documento...</p>
+                {/* Full text can be condensed here or provided in scrollbox */}
+                <p style={{ marginTop: "16px", fontWeight: 700 }}>B) Adesione al servizio di Firma Elettronica Avanzata (a cura del Cliente)</p>
+                <p>Il sottoscritto <strong>{form.surname} {form.name}</strong>, nato a <strong>{form.birth_place}</strong> il <strong>{form.birthdate}</strong>, chiede di poter aderire al servizio di FEA.</p>
+              </div>
+
+              <label style={{ display: "flex", gap: "12px", alignItems: "center", padding: "20px", background: "#f0fdf4", borderRadius: "12px", cursor: "pointer", border: feaAccepted ? "2px solid #22c55e" : "2px solid transparent" }}>
+                <input type="checkbox" checked={feaAccepted} onChange={e => setFeaAccepted(e.target.checked)} style={{ width: "24px", height: "24px", accentColor: "#22c55e" }} />
+                <span style={{ fontSize: "14px", fontWeight: 600, color: "#166534" }}>Chiedo di poter aderire al servizio di Firma Elettronica Avanzata (“FEA”) di COSMEDIC SRL</span>
+              </label>
+
+              <div style={{ marginTop: "40px", display: "flex", justifyContent: "space-between" }}>
+                <button onClick={prevStep} style={{ border: "none", background: "transparent", color: "#64748b", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px" }}>
+                  <ChevronLeft size={20} /> Indietro
+                </button>
+                <button onClick={nextStep} style={{ padding: "18px 48px", borderRadius: "14px", background: feaAccepted ? "var(--primary)" : "#cbd5e1", color: "white", border: "none", fontWeight: 700, fontSize: "16px", cursor: feaAccepted ? "pointer" : "not-allowed" }}>
+                  Continua <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div style={{ background: "white", borderRadius: "24px", padding: "40px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0" }}>
+              <div style={{ textAlign: "center", marginBottom: "32px" }}>
+                <h1 style={{ fontSize: "24px", fontWeight: 800, color: "#0f172a" }}>Apponi la tua firma</h1>
+                <p style={{ color: "#64748b", fontSize: "14px" }}>Firma nel riquadro sottostante per completare l'adesione.</p>
               </div>
 
               <div style={{ background: "white", borderRadius: "16px", padding: "24px", border: "2px dashed #cbd5e1" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                  <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#475569" }}>APPONI LA TUA FIRMA</h4>
+                  <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#475569" }}>RIQUADRO DI FIRMA</h4>
                   <button onClick={() => patSigRef.current?.clear()} style={{ fontSize: "12px", color: "var(--primary)", border: "none", background: "transparent", fontWeight: 600 }}>CANCELLA</button>
                 </div>
                 <div style={{ background: "#fff", display: "flex", justifyContent: "center" }}>
-                  <SignatureCanvas
-                    ref={patSigRef}
-                    canvasProps={{ width: 600, height: 250, className: "sigCanvas" }}
-                    backgroundColor="white"
-                  />
+                  <SignatureCanvas ref={patSigRef} canvasProps={{ width: 600, height: 250, className: "sigCanvas" }} backgroundColor="white" />
                 </div>
               </div>
 
@@ -292,23 +351,8 @@ export default function GuestRegisterWizard() {
                   <ChevronLeft size={20} /> Indietro
                 </button>
                 <button 
-                  onClick={handleSubmit}
-                  disabled={saving}
-                  style={{ 
-                    padding: "18px 48px", 
-                    borderRadius: "14px", 
-                    background: "var(--primary)", 
-                    color: "white", 
-                    border: "none", 
-                    fontWeight: 700, 
-                    fontSize: "18px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                    boxShadow: "0 10px 15px -3px rgba(13, 148, 136, 0.3)",
-                    cursor: "pointer",
-                    opacity: saving ? 0.7 : 1
-                  }}
+                  onClick={handleSubmit} disabled={saving}
+                  style={{ padding: "18px 48px", borderRadius: "14px", background: "var(--primary)", color: "white", border: "none", fontWeight: 700, fontSize: "18px", display: "flex", alignItems: "center", gap: "12px", boxShadow: "0 10px 15px -3px rgba(13, 148, 136, 0.3)", cursor: "pointer", opacity: saving ? 0.7 : 1 }}
                 >
                   {saving ? <Loader2 className="animate-spin" /> : <ShieldCheck size={22} />}
                   {saving ? "Salvataggio..." : "CONFERMA E TERMINA"}
@@ -317,39 +361,14 @@ export default function GuestRegisterWizard() {
             </div>
           )}
 
-          {step === 3 && (
+          {step === 5 && (
             <div style={{ background: "white", borderRadius: "32px", padding: "60px 40px", textAlign: "center", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0" }}>
-              <div style={{ 
-                width: "100px", 
-                height: "100px", 
-                borderRadius: "50%", 
-                background: "#f0fdf4", 
-                color: "#22c55e", 
-                display: "flex", 
-                alignItems: "center", 
-                justifyContent: "center",
-                margin: "0 auto 32px"
-              }}>
+              <div style={{ width: "100px", height: "100px", borderRadius: "50%", background: "#f0fdf4", color: "#22c55e", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 32px" }}>
                 <CheckCircle2 size={56} />
               </div>
               <h1 style={{ fontSize: "32px", fontWeight: 800, color: "#0f172a", marginBottom: "16px" }}>Registrazione Completata!</h1>
-              <p style={{ color: "#64748b", fontSize: "18px", maxWidth: "400px", margin: "0 auto 48px" }}>Grazie <strong>{form.name}</strong>, i tuoi dati sono stati salvati correttamente. Accomodati pure, ti chiameremo a breve.</p>
-              
-              <button 
-                onClick={() => router.push("/")}
-                style={{ 
-                  padding: "16px 32px", 
-                  borderRadius: "14px", 
-                  background: "#f1f5f9", 
-                  color: "#475569", 
-                  border: "none", 
-                  fontWeight: 700, 
-                  fontSize: "16px",
-                  cursor: "pointer"
-                }}
-              >
-                Torna alla Home
-              </button>
+              <p style={{ color: "#64748b", fontSize: "18px", maxWidth: "400px", margin: "0 auto 48px" }}>Grazie <strong>{form.name}</strong>, i tuoi dati e la tua adesione FEA sono stati salvati correttamente.</p>
+              <button onClick={() => router.push("/")} style={{ padding: "16px 32px", borderRadius: "14px", background: "#f1f5f9", color: "#475569", border: "none", fontWeight: 700, fontSize: "16px", cursor: "pointer" }}>Torna alla Home</button>
             </div>
           )}
         </div>
