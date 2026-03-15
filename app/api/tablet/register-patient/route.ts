@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 
-// Usiamo la service_role key lato server per bypassare le RLS
-// Questa chiave NON viene mai esposta al client
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 export async function POST(request: Request) {
   try {
+    // Usiamo la service_role key lato server per bypassare le RLS
+    // Inizializziamo dentro la funzione per evitare errori a build-time su Vercel
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
     const body = await request.json()
 
     const { name, surname, fiscal_code, phone, email, birthdate, address, city, cap, country } = body
