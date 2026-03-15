@@ -6,10 +6,11 @@ import Sidebar from "./Sidebar"
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   
-  // Se siamo nel percorso tablet, non mostriamo la sidebar desktop
+  // Se siamo nella landing page o nel percorso tablet, non mostriamo la sidebar desktop
   const isTablet = pathname?.startsWith("/tablet")
+  const isLanding = pathname === "/"
 
-  if (isTablet) {
+  if (isTablet || isLanding) {
     return (
       <div style={{ minHeight: "100vh", background: "var(--content-bg)" }}>
         {children}
