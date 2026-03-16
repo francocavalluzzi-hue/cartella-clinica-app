@@ -1,40 +1,39 @@
 @import "tailwindcss";
 
 :root {
-  /* Cosmedic Palette */
-  --background: #f1f5f9;
-  --foreground: #1e293b;
-  --primary: #0f766e; /* Più scuro e incisivo */
+  /* Cosmedic Palette - Light Theme */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --primary: #0f766e;
   --primary-hover: #115e59;
-  --primary-light: #f0fdf4; /* Leggermente più visibile dello sfondo bianco */
+  --primary-light: #f0fdf4;
   --surface: #ffffff;
-  --border: #e2e8f0; /* Bordo grigio medio, chiaramente visibile */
+  --border: #e2e8f0;
   
-  --sidebar-bg: #020617; /* Quasi nero */
+  --sidebar-bg: #020617;
   --sidebar-text: #cbd5e1;
   --sidebar-active: #ffffff;
   --sidebar-hover: #1e293b;
   
-  --content-bg: #f1f5f9; /* Grigio-blu chiaro per staccarlo nettamente dai box bianchi */
+  --content-bg: #f8fafc;
   --card-bg: #ffffff;
-  --border: #94a3b8; /* Bordo grigio medio, chiaramente visibile */
   
-  --text-main: #000000; /* Nero assoluto */
-  --text-muted: #334155; /* Grigio molto scuro, altissima leggibilità */
+  --text-main: #0f172a;
+  --text-muted: #64748b;
   
-  --success: #15803d; /* Verde scuro deciso */
+  --success: #15803d;
   --warning: #b45309;
   --danger: #b91c1c;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #020617; /* Deep Navy black */
+    --background: #020617;
     --foreground: #f1f5f9;
-    --primary: #2dd4bf; /* Neon Teal */
+    --primary: #2dd4bf; 
     --primary-hover: #14b8a6;
     --primary-light: rgba(45, 212, 191, 0.1);
-    --surface: #0f172a; /* Slate background */
+    --surface: #0f172a;
     --border: #1e293b;
     
     --content-bg: #020617;
@@ -53,20 +52,16 @@
 
 body {
   font-family: var(--font-geist-sans), sans-serif;
-  background-color: var(--content-bg);
-  color: var(--text-main);
+  background-color: var(--background);
+  color: var(--foreground);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 h1, h2, h3, h4, h5, h6 {
   color: var(--text-main);
   font-weight: 700;
-}
-
-button {
-  cursor: pointer;
-  transition: all 0.2s;
 }
 
 /* Custom Utilities */
@@ -75,6 +70,7 @@ button {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 24px;
+  transition: all 0.3s ease;
 }
 
 .btn-primary {
@@ -85,8 +81,3 @@ button {
   padding: 10px 20px;
   font-weight: 600;
 }
-
-.btn-primary:hover {
-  background: var(--primary-hover);
-}
-

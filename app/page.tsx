@@ -14,44 +14,34 @@ export default function LandingPage() {
   return (
     <div style={{ 
       minHeight: "100vh", 
-      background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+      background: "var(--background)",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      padding: "24px"
+      padding: "24px",
+      position: "relative",
+      overflow: "hidden"
     }}>
       {/* Background Decorative Elements */}
       <div style={{ 
         position: "absolute", 
         top: "-10%", 
         right: "-5%", 
-        width: "400px", 
-        height: "400px", 
-        background: "var(--primary-light)", 
+        width: "600px", 
+        height: "600px", 
+        background: "var(--primary)", 
         borderRadius: "50%", 
-        filter: "blur(80px)", 
-        opacity: 0.4,
-        zIndex: 0
-      }}></div>
-      <div style={{ 
-        position: "absolute", 
-        bottom: "-10%", 
-        left: "-5%", 
-        width: "300px", 
-        height: "300px", 
-        background: "#bae6fd", 
-        borderRadius: "50%", 
-        filter: "blur(60px)", 
-        opacity: 0.4,
+        filter: "blur(120px)", 
+        opacity: 0.1,
         zIndex: 0
       }}></div>
 
       <div style={{ zIndex: 1, textAlign: "center", marginBottom: "48px" }}>
-        <h1 style={{ fontSize: "40px", fontWeight: 800, color: "var(--primary)", marginBottom: "12px", letterSpacing: "-1px" }}>
+        <h1 style={{ fontSize: "42px", fontWeight: 800, color: "var(--primary)", marginBottom: "12px", letterSpacing: "-1px" }}>
           COSMEDIC <span style={{ color: "var(--text-main)", fontWeight: 400 }}>Suite</span>
         </h1>
-        <p style={{ color: "var(--text-muted)", fontSize: "18px" }}>Benvenuto nel sistema di gestione clinica integrata</p>
+        <p style={{ color: "var(--text-muted)", fontSize: "18px", fontWeight: 500 }}>Sistema di gestione clinica intelligente e integrata</p>
       </div>
 
       <div style={{ 
@@ -59,32 +49,37 @@ export default function LandingPage() {
         display: "grid", 
         gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", 
         gap: "32px", 
-        maxWidth: "1000px", 
+        maxWidth: "1100px", 
         width: "100%" 
       }}>
         
-        {/* PC PORTAL */}
+        {/* PORTALE PC */}
         <Link href="/dashboard" style={{ textDecoration: "none" }}>
           <div className="card" style={{ 
             height: "100%", 
-            padding: "40px", 
+            padding: "48px 40px", 
             display: "flex", 
             flexDirection: "column", 
             alignItems: "center",
             textAlign: "center",
-            transition: "transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
             cursor: "pointer",
-            background: "rgba(255, 255, 255, 0.8)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255, 255, 255, 0.3)"
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)"
           }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-10px)"}
-          onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-8px)"
+            e.currentTarget.style.borderColor = "var(--primary)"
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0)"
+            e.currentTarget.style.borderColor = "var(--border)"
+          }}
           >
             <div style={{ 
               width: "80px", 
               height: "80px", 
-              borderRadius: "20px", 
+              borderRadius: "24px", 
               background: "var(--primary)", 
               color: "white",
               display: "flex",
@@ -95,9 +90,9 @@ export default function LandingPage() {
             }}>
               <Monitor size={40} />
             </div>
-            <h2 style={{ fontSize: "24px", color: "var(--text-main)", marginBottom: "12px" }}>Portale Amministrativo</h2>
+            <h2 style={{ fontSize: "24px", fontWeight: 800, color: "var(--text-main)", marginBottom: "12px" }}>Portale Amministrativo</h2>
             <p style={{ color: "var(--text-muted)", fontSize: "15px", lineHeight: "1.6", marginBottom: "24px" }}>
-              Gestione pazienti, statistiche, procedure e controllo completo della clinica. Ottimizzato per PC.
+              Gestione pazienti, statistiche, procedure e controllo completo della clinica. Ottimizzato per uso desktop.
             </p>
             <div style={{ 
               marginTop: "auto",
@@ -105,46 +100,46 @@ export default function LandingPage() {
               alignItems: "center",
               gap: "8px",
               color: "var(--primary)",
-              fontWeight: 600
+              fontWeight: 700
             }}>
               Vai alla Dashboard <ArrowRight size={18} />
             </div>
           </div>
         </Link>
 
-        {/* TABLET PORTAL */}
+        {/* FUNZIONI TABLET */}
         <div className="card" style={{ 
           height: "100%", 
-          padding: "40px", 
+          padding: "48px 40px", 
           display: "flex", 
           flexDirection: "column", 
           textAlign: "left",
-          background: "rgba(255, 255, 255, 0.8)",
-          backdropFilter: "blur(10px)",
-          border: "1px solid rgba(255, 255, 255, 0.3)"
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+          boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)"
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "32px" }}>
             <div style={{ 
               width: "60px", 
               height: "60px", 
-              borderRadius: "15px", 
-              background: "#bae6fd", 
-              color: "#0369a1",
+              borderRadius: "18px", 
+              background: "var(--primary-light)", 
+              color: "var(--primary)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center"
             }}>
               <Tablet size={32} />
             </div>
-            <h2 style={{ fontSize: "24px", color: "var(--text-main)" }}>Funzioni Tablet</h2>
+            <h2 style={{ fontSize: "24px", fontWeight: 800, color: "var(--text-main)" }}>Funzioni Tablet</h2>
           </div>
           
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <Link href="/tablet/register" style={{ textDecoration: "none" }}>
               <div style={{ 
                 padding: "20px", 
-                borderRadius: "12px", 
-                background: "white", 
+                borderRadius: "16px", 
+                background: "var(--background)", 
                 border: "1px solid var(--border)",
                 display: "flex",
                 alignItems: "center",
@@ -156,8 +151,8 @@ export default function LandingPage() {
               >
                 <div style={{ color: "var(--primary)" }}><UserPlus size={24} /></div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: "15px", color: "var(--text-main)" }}>Registra Nuovo Paziente</div>
-                  <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>Wizard FEA a 5 step con foto</div>
+                  <div style={{ fontWeight: 800, fontSize: "15px", color: "var(--text-main)" }}>Registra Nuovo Paziente</div>
+                  <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>Wizard FEA con acquisizione foto</div>
                 </div>
               </div>
             </Link>
@@ -165,8 +160,8 @@ export default function LandingPage() {
             <Link href="/tablet/doctor" style={{ textDecoration: "none" }}>
               <div style={{ 
                 padding: "20px", 
-                borderRadius: "12px", 
-                background: "white", 
+                borderRadius: "16px", 
+                background: "var(--background)", 
                 border: "1px solid var(--border)",
                 display: "flex",
                 alignItems: "center",
@@ -176,27 +171,29 @@ export default function LandingPage() {
               onMouseEnter={(e) => e.currentTarget.style.borderColor = "var(--primary)"}
               onMouseLeave={(e) => e.currentTarget.style.borderColor = "var(--border)"}
               >
-                <div style={{ color: "#0369a1" }}><ClipboardList size={24} /></div>
+                <div style={{ color: "var(--primary)" }}><ClipboardList size={24} /></div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: "15px", color: "var(--text-main)" }}>Dashboard Medico</div>
-                  <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>Consultazione e invio a firma</div>
+                  <div style={{ fontWeight: 800, fontSize: "15px", color: "var(--text-main)" }}>Dashboard Medico</div>
+                  <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>Firma moduli e planning chirurgico</div>
                 </div>
               </div>
             </Link>
           </div>
 
           <div style={{ 
-            marginTop: "24px",
-            padding: "12px",
-            borderRadius: "8px", 
-            background: "#f0fdf4",
-            color: "#166534",
+            marginTop: "32px",
+            padding: "14px",
+            borderRadius: "12px", 
+            background: "var(--primary-light)",
+            color: "var(--primary)",
             fontSize: "12px",
+            fontWeight: 700,
             display: "flex",
             alignItems: "center",
-            gap: "8px"
+            gap: "8px",
+            border: "1px solid var(--primary-hover)22"
           }}>
-            <ShieldCheck size={16} />
+            <ShieldCheck size={18} />
             Sistema di Firma Elettronica Avanzata Attivo
           </div>
         </div>
@@ -204,8 +201,8 @@ export default function LandingPage() {
       </div>
 
       <footer style={{ marginTop: "64px", textAlign: "center", fontSize: "13px", color: "var(--text-muted)", zIndex: 1 }}>
-        COSMEDIC SRL — Innovazione e Cura del Paziente
-        <div style={{ marginTop: "8px", fontSize: "11px" }}>© 2026 Sistema Software Proprietario</div>
+        <div>COSMEDIC SRL — Innovazione e Cura del Paziente</div>
+        <div style={{ marginTop: "4px", fontSize: "11px", opacity: 0.6 }}>© 2026 Sistema di Gestione Clinica Proprietario</div>
       </footer>
     </div>
   )
