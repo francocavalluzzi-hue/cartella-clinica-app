@@ -18,7 +18,8 @@ import {
   Stethoscope,
   Check,
   CheckCircle2,
-  Paintbrush
+  Paintbrush,
+  ShieldCheck
 } from "lucide-react"
 import { MODULI, INTERVENTO_TYPES, MAPPATURA_MODULI } from "../../../../lib/constants"
 import { SkeletonCard, SkeletonRow } from "../../../components/Skeleton"
@@ -26,6 +27,7 @@ import { DrawingPad } from "../../../components/DrawingPad"
 import ClinicalTimeline from "../../../components/ClinicalTimeline"
 import MedicalScribe from "../../../components/MedicalScribe"
 import PredictiveInsights from "../../../components/PredictiveInsights"
+import AuditLog from "../../../components/AuditLog"
 
 
 export default function TabletDoctorPatientDetails() {
@@ -39,7 +41,7 @@ export default function TabletDoctorPatientDetails() {
   const [signedDocuments, setSignedDocuments] = useState<number[]>([])
   const [preselectType, setPreselectType] = useState("")
   const [showPlanning, setShowPlanning] = useState(false)
-  const [activeTab, setActiveTab] = useState<'docs' | 'timeline' | 'notes'>('docs')
+  const [activeTab, setActiveTab] = useState<'docs' | 'timeline' | 'notes' | 'audit'>('docs')
   const [medicalNotes, setMedicalNotes] = useState("")
   const [allDocs, setAllDocs] = useState<any[]>([])
 
@@ -178,7 +180,8 @@ export default function TabletDoctorPatientDetails() {
           {[
             { id: 'docs', label: 'Documenti', icon: ClipboardList },
             { id: 'timeline', label: 'Timeline', icon: Calendar },
-            { id: 'notes', label: 'Note AI', icon: Stethoscope }
+            { id: 'notes', label: 'Note AI', icon: Stethoscope },
+            { id: 'audit', label: 'Audit GDPR', icon: ShieldCheck }
           ].map(tab => (
             <button
               key={tab.id}
@@ -338,6 +341,12 @@ export default function TabletDoctorPatientDetails() {
                 SALVA NOTE NEL DIARIO
               </button>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'audit' && (
+          <div style={{ marginBottom: '32px' }}>
+            <AuditLog patient={patient} procedures={procedures} documents={allDocs} />
           </div>
         )}
 
