@@ -181,7 +181,21 @@ export default function TabletPatientSignaturePage() {
         <div style={{ flex: 1, padding: "32px", display: "flex", flexDirection: "column", gap: "24px", overflowY: "auto" }}>
           <div style={{ textAlign: "center", marginBottom: "8px" }}>
             <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#0f172a" }}>{currentModulo.nome}</h2>
-            <p style={{ color: "#64748b", fontSize: "14px" }}>Leggi il documento sul monitor e apponi la firma qui sotto.</p>
+            <p style={{ color: "#64748b", fontSize: "14px" }}>Leggi il documento e apponi la firma dopo la revisione.</p>
+          </div>
+
+          {/* PDF Preview Area */}
+          <div style={{ flex: 1, minHeight: "350px", background: "white", borderRadius: "16px", border: "1px solid #e2e8f0", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+            {currentModulo.file ? (
+              <iframe 
+                src={`${BUCKET_URL}/${currentModulo.file}#toolbar=0&navpanes=0&scrollbar=0`} 
+                style={{ width: "100%", height: "100%", border: "none" }}
+              />
+            ) : (
+              <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: "14px" }}>
+                Anteprima non disponibile per questo documento.
+              </div>
+            )}
           </div>
 
           {/* Signature Grid with Custom Responsive Classes */}

@@ -14,10 +14,10 @@ import {
   ClipboardList,
   PenTool,
   Plus,
-  ChevronRight,
   Download,
   Stethoscope,
-  Check
+  Check,
+  CheckCircle2
 } from "lucide-react"
 import { MODULI } from "../../../../lib/constants"
 
@@ -30,10 +30,29 @@ export default function TabletDoctorPatientDetails() {
   const [procedures, setProcedures] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedModules, setSelectedModules] = useState<number[]>([0, 1]) // Default selective items
+  const [signedDocuments, setSignedDocuments] = useState<number[]>([])
 
 
   useEffect(() => {
-    if (id) { loadPatient(); loadProcedures() }
+    if (id) { 
+      loadPatient(); 
+      loadProcedures();
+      loadSignedDocuments();
+      
+      const channel = supabase
+        .channel(`patient_docs_${id}`)
+        .on("postgres_changes", {
+          event: "INSERT",
+          schema: "public",
+          table: "documents",
+          filter: `patient_id=eq.${id}`
+        }, (payload: any) => {
+          setSignedDocuments(prev => [...prev, payload.new.document_type])
+        })
+        .subscribe()
+
+      return () => { supabase.removeChannel(channel) }
+    }
   }, [id])
 
   async function loadPatient() {
@@ -45,6 +64,11 @@ export default function TabletDoctorPatientDetails() {
   async function loadProcedures() {
     const { data } = await supabase.from("procedures").select("*").eq("patient_id", id).order("procedure_date", {ascending:false})
     setProcedures(data || [])
+  }
+
+  async function loadSignedDocuments() {
+    const { data } = await supabase.from("documents").select("document_type").eq("patient_id", id)
+    if (data) setSignedDocuments(data.map(d => d.document_type))
   }
 
   if (loading) return <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>Caricamento...</div>
@@ -117,7 +141,13 @@ export default function TabletDoctorPatientDetails() {
                 <span style={{ fontSize: "14px", fontWeight: 600, color: selectedModules.includes(m.id) ? "var(--primary)" : "#475569" }}>
                   {m.nome} <span style={{ fontSize: "11px", fontWeight: 400, color: "#94a3b8" }}>({m.quando})</span>
                 </span>
-                {selectedModules.includes(m.id) && <Check size={16} style={{ marginLeft: "auto", color: "var(--primary)" }} />}
+                {signedDocuments.includes(m.id) ? (
+                  <div style={{ marginLeft: "auto", background: "#f0fdf4", color: "#16a34a", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 800, display: "flex", alignItems: "center", gap: "4px", border: "1px solid #bbf7d0" }}>
+                    <CheckCircle2 size={12} /> FIRMATO
+                  </div>
+                ) : selectedModules.includes(m.id) && (
+                  <Check size={16} style={{ marginLeft: "auto", color: "var(--primary)" }} />
+                )}
               </label>
             ))}
           </div>

@@ -273,8 +273,30 @@ export default function GuestRegisterWizard() {
                   <div style={{ position: "absolute", bottom: "32px", left: "0", right: "0", display: "flex", justifyContent: "center" }}>
                     <button onClick={() => {
                         const v = document.querySelector("video"); if (!v) return;
-                        const c = document.createElement("canvas"); c.width = v.videoWidth; c.height = v.videoHeight;
-                        c.getContext("2d")?.drawImage(v, 0, 0); setIdPhoto(c.toDataURL("image/jpeg"));
+                        const c = document.createElement("canvas");
+                        const MAX_WIDTH = 1024;
+                        const MAX_HEIGHT = 1024;
+                        let width = v.videoWidth;
+                        let height = v.videoHeight;
+                        
+                        if (width > height) {
+                          if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                          }
+                        } else {
+                          if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                          }
+                        }
+                        
+                        c.width = width;
+                        c.height = height;
+                        const ctx = c.getContext("2d");
+                        if (!ctx) return;
+                        ctx.drawImage(v, 0, 0, width, height);
+                        setIdPhoto(c.toDataURL("image/jpeg", 0.7));
                         (v.srcObject as MediaStream)?.getTracks().forEach(t => t.stop());
                       }}
                       style={{ width: "70px", height: "70px", borderRadius: "50%", background: "white", border: "5px solid var(--primary)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
