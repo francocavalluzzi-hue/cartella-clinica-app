@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "../../../../lib/supabaseClient"
 import SignatureCanvas from "react-signature-canvas"
 import { PDFDocument } from "pdf-lib"
@@ -40,6 +40,13 @@ export default function TabletPatientSignaturePage() {
   const [signing, setSigning] = useState(false)
   const [done, setDone] = useState<number[]>([])
 
+  const searchParams = useSearchParams()
+  const modulesParam = searchParams.get("modules")
+  
+  const filteredModuli = modulesParam 
+    ? MODULI.filter(m => modulesParam.split(",").includes(m.id.toString()))
+    : MODULI
+
   const patSigRef = useRef<any>(null)
   const docSigRef = useRef<any>(null)
 
@@ -53,7 +60,7 @@ export default function TabletPatientSignaturePage() {
     setLoading(false)
   }
 
-  const currentModulo = MODULI[selectedIdx]
+  const currentModulo = filteredModuli[selectedIdx]
 
   async function handleSign() {
     if (!patient || signing) return
@@ -89,9 +96,22 @@ export default function TabletPatientSignaturePage() {
       if (error) throw error
       
       setDone(prev => [...prev, currentModulo.id])
+      
+      // Auto-Next logic
       alert("Documento firmato e salvato con successo!")
       patSigRef.current?.clear()
       docSigRef.current?.clear()
+
+      // Find next unsigned document
+      const currentDone = [...done, currentModulo.id]
+      const nextUnsignedIdx = filteredModuli.findIndex((m) => !currentDone.includes(m.id))
+      
+      if (nextUnsignedIdx !== -1) {
+        setSelectedIdx(nextUnsignedIdx)
+      } else {
+        alert("Tutti i documenti selezionati sono stati firmati!")
+      }
+
     } catch (err) {
       console.error(err)
       alert("Errore durante il salvataggio")
@@ -121,7 +141,7 @@ export default function TabletPatientSignaturePage() {
         <div style={{ width: "280px", background: "#f1f5f9", borderRight: "1px solid #e2e8f0", overflowY: "auto", padding: "16px" }}>
           <h3 style={{ fontSize: "13px", color: "#64748b", fontWeight: 700, marginBottom: "16px", padding: "0 8px" }}>DOCUMENTI DA FIRMARE</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {MODULI.map((m, idx) => (
+            {filteredModuli.map((m, idx) => (
               <button 
                 key={m.id}
                 onClick={() => setSelectedIdx(idx)}
@@ -164,14 +184,33 @@ export default function TabletPatientSignaturePage() {
             <p style={{ color: "#64748b", fontSize: "14px" }}>Leggi il documento sul monitor e apponi la firma qui sotto.</p>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+          {/* Signature Grid with Custom Responsive Classes */}
+          <div className="signature-grid" style={{ 
+            display: "grid", 
+            gap: "24px",
+            // Responsive design will be handled via an injected style block for media queries
+          }}>
+            <style jsx>{`
+              .signature-grid {
+                grid-template-columns: 1fr 1fr;
+              }
+              @media (max-width: 900px) {
+                .signature-grid {
+                  grid-template-columns: 1fr;
+                }
+              }
+              .sig-container {
+                touch-action: none;
+              }
+            `}</style>
+            
             {/* Signature Patient */}
             <div style={{ background: "white", borderRadius: "16px", padding: "24px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                 <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#475569" }}>FIRMA DEL PAZIENTE</h4>
-                <button onClick={() => patSigRef.current?.clear()} style={{ fontSize: "12px", color: "var(--primary)", border: "none", background: "transparent", fontWeight: 600 }}>CANCELLA</button>
+                <button onClick={() => patSigRef.current?.clear()} style={{ fontSize: "12px", color: "var(--primary)", border: "none", background: "transparent", fontWeight: 600, cursor: "pointer" }}>CANCELLA</button>
               </div>
-              <div style={{ background: "#f8fafc", borderRadius: "12px", border: "2px dashed #cbd5e1", overflow: "hidden" }}>
+              <div className="sig-container" style={{ background: "#f8fafc", borderRadius: "12px", border: "2px dashed #cbd5e1", overflow: "hidden", display: "flex", justifyContent: "center" }}>
                 <SignatureCanvas
                   ref={patSigRef}
                   canvasProps={{ width: 400, height: 200, className: "sigCanvas" }}
@@ -184,9 +223,9 @@ export default function TabletPatientSignaturePage() {
             <div style={{ background: "white", borderRadius: "16px", padding: "24px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                 <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#475569" }}>FIRMA DEL MEDICO</h4>
-                <button onClick={() => docSigRef.current?.clear()} style={{ fontSize: "12px", color: "var(--primary)", border: "none", background: "transparent", fontWeight: 600 }}>CANCELLA</button>
+                <button onClick={() => docSigRef.current?.clear()} style={{ fontSize: "12px", color: "var(--primary)", border: "none", background: "transparent", fontWeight: 600, cursor: "pointer" }}>CANCELLA</button>
               </div>
-              <div style={{ background: "#f8fafc", borderRadius: "12px", border: "2px dashed #cbd5e1", overflow: "hidden" }}>
+              <div className="sig-container" style={{ background: "#f8fafc", borderRadius: "12px", border: "2px dashed #cbd5e1", overflow: "hidden", display: "flex", justifyContent: "center" }}>
                 <SignatureCanvas
                   ref={docSigRef}
                   canvasProps={{ width: 400, height: 200, className: "sigCanvas" }}
@@ -230,9 +269,9 @@ export default function TabletPatientSignaturePage() {
               <ChevronLeft size={20} /> Precedente
             </button>
             <button 
-              disabled={selectedIdx === MODULI.length - 1}
+              disabled={selectedIdx === filteredModuli.length - 1}
               onClick={() => setSelectedIdx(prev => prev + 1)}
-              style={{ border: "1px solid #e2e8f0", background: "white", padding: "12px 24px", borderRadius: "12px", color: "#64748b", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", opacity: selectedIdx === MODULI.length - 1 ? 0.5 : 1 }}
+              style={{ border: "1px solid #e2e8f0", background: "white", padding: "12px 24px", borderRadius: "12px", color: "#64748b", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", opacity: selectedIdx === filteredModuli.length - 1 ? 0.5 : 1 }}
             >
               Prossimo <ChevronRight size={20} />
             </button>

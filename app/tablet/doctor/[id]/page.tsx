@@ -16,8 +16,11 @@ import {
   Plus,
   ChevronRight,
   Download,
-  Stethoscope
+  Stethoscope,
+  Check
 } from "lucide-react"
+import { MODULI } from "../../../../lib/constants"
+
 
 export default function TabletDoctorPatientDetails() {
   const params = useParams()
@@ -26,6 +29,8 @@ export default function TabletDoctorPatientDetails() {
   const [patient, setPatient] = useState<any>(null)
   const [procedures, setProcedures] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedModules, setSelectedModules] = useState<number[]>([0, 1]) // Default selective items
+
 
   useEffect(() => {
     if (id) { loadPatient(); loadProcedures() }
@@ -80,26 +85,69 @@ export default function TabletDoctorPatientDetails() {
           </div>
         </div>
 
+        {/* Selective Module Assignment */}
+        <div style={{ background: "white", borderRadius: "16px", padding: "24px", marginBottom: "24px", border: "1px solid #e2e8f0" }}>
+          <h3 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <ClipboardList size={18} /> SELEZIONA DOCUMENTI DA FIRMARE
+          </h3>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "10px" }}>
+            {MODULI.map((m: any) => (
+              <label key={m.id} style={{ 
+                display: "flex", 
+                alignItems: "center", 
+                gap: "12px", 
+                padding: "12px", 
+                borderRadius: "10px", 
+                background: selectedModules.includes(m.id) ? "var(--primary-light)" : "#f8fafc",
+                border: "1px solid",
+                borderColor: selectedModules.includes(m.id) ? "var(--primary)" : "#e2e8f0",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}>
+                <input 
+                  type="checkbox" 
+                  checked={selectedModules.includes(m.id)}
+                  onChange={() => {
+                    setSelectedModules(prev => 
+                      prev.includes(m.id) ? prev.filter(id => id !== m.id) : [...prev, m.id]
+                    )
+                  }}
+                  style={{ width: "20px", height: "20px", accentColor: "var(--primary)" }}
+                />
+                <span style={{ fontSize: "14px", fontWeight: 600, color: selectedModules.includes(m.id) ? "var(--primary)" : "#475569" }}>
+                  {m.nome} <span style={{ fontSize: "11px", fontWeight: 400, color: "#94a3b8" }}>({m.quando})</span>
+                </span>
+                {selectedModules.includes(m.id) && <Check size={16} style={{ marginLeft: "auto", color: "var(--primary)" }} />}
+              </label>
+            ))}
+          </div>
+        </div>
+
         {/* Action: Send to Signature Tablet */}
         <button 
-          onClick={() => router.push(`/tablet/patient/${id}`)}
+          onClick={() => {
+            if (selectedModules.length === 0) return alert("Seleziona almeno un documento")
+            router.push(`/tablet/patient/${id}?modules=${selectedModules.join(",")}`)
+          }}
           style={{ 
             width: "100%", 
-            padding: "20px", 
+            padding: "22px", 
             borderRadius: "16px", 
-            background: "#7c3aed", 
+            background: "var(--primary)", 
             color: "white", 
             border: "none", 
-            fontWeight: 700, 
+            fontWeight: 800, 
+            fontSize: "16px",
             display: "flex", 
             alignItems: "center", 
             justifyContent: "center", 
             gap: "12px",
             marginBottom: "32px",
-            boxShadow: "0 4px 6px -1px rgba(124, 58, 237, 0.2)"
+            boxShadow: "0 10px 15px -3px rgba(15, 118, 110, 0.3)",
+            cursor: "pointer"
           }}>
           <PenTool size={22} />
-          PREPARA FIRME (CONSEGNA TABLET)
+          CONSEGNA TABLET PER FIRMA ({selectedModules.length})
         </button>
 
         {/* Procedures List */}

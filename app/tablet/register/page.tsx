@@ -53,7 +53,12 @@ export default function GuestRegisterWizard() {
   const patSigRef = useRef<any>(null)
 
   const nextStep = () => {
-    if (step === 1 && (!form.name || !form.surname)) return alert("Nome e Cognome sono obbligatori")
+    if (step === 1) {
+      if (!form.name || !form.surname) return alert("Nome e Cognome sono obbligatori")
+      if (form.fiscal_code && form.fiscal_code.length !== 16) return alert("Il Codice Fiscale deve essere di 16 caratteri")
+      if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return alert("Inserisci una email valida")
+      if (form.phone && !/^[0-9+]+$/.test(form.phone)) return alert("Il numero di telefono deve contenere solo numeri o il prefisso '+'")
+    }
     if (step === 2 && !idPhoto) return alert("Per favore scatta una foto identificativa prima di procedere")
     if (step === 3 && !feaAccepted) return alert("Devi accettare i termini di adesione FEA per procedere")
     setStep(prev => prev + 1)
@@ -264,7 +269,7 @@ export default function GuestRegisterWizard() {
 
               {!idPhoto ? (
                 <div style={{ position: "relative", borderRadius: "20px", overflow: "hidden", background: "#000", aspectRatio: "4/3", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                  <video autoPlay playsInline ref={v => { if (v && !v.srcObject) navigator.mediaDevices.getUserMedia({video:true}).then(s => v.srcObject = s) }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <video autoPlay playsInline ref={v => { if (v && !v.srcObject) navigator.mediaDevices.getUserMedia({video: { facingMode: "environment" }}).then(s => v.srcObject = s).catch(() => navigator.mediaDevices.getUserMedia({video: true}).then(s => v.srcObject = s)) }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   <div style={{ position: "absolute", bottom: "32px", left: "0", right: "0", display: "flex", justifyContent: "center" }}>
                     <button onClick={() => {
                         const v = document.querySelector("video"); if (!v) return;
