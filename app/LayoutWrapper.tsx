@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import Sidebar from "./Sidebar"
+import CommandPalette from "./components/CommandPalette"
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -13,6 +14,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   if (isTablet || isLanding) {
     return (
       <div style={{ minHeight: "100vh", background: "var(--content-bg)" }}>
+        <CommandPalette />
         {children}
       </div>
     )
@@ -27,6 +29,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
         minHeight: "100vh",
         background: "var(--content-bg)"
       }}>
+        <CommandPalette />
         {children}
       </main>
     </div>

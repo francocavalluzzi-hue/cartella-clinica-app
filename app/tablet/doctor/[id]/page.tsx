@@ -25,6 +25,7 @@ import { SkeletonCard, SkeletonRow } from "../../../components/Skeleton"
 import { DrawingPad } from "../../../components/DrawingPad"
 import ClinicalTimeline from "../../../components/ClinicalTimeline"
 import MedicalScribe from "../../../components/MedicalScribe"
+import PredictiveInsights from "../../../components/PredictiveInsights"
 
 
 export default function TabletDoctorPatientDetails() {
@@ -131,6 +132,15 @@ export default function TabletDoctorPatientDetails() {
               <div style={{ fontSize: "14px", fontWeight: 600 }}>{patient.birthdate || "—"}</div>
             </div>
           </div>
+        </div>
+
+        {/* Level 7: Predictive Insights */}
+        <div style={{ marginBottom: "24px" }}>
+          <PredictiveInsights 
+            patientId={id} 
+            procedures={procedures} 
+            signedDocs={signedDocuments} 
+          />
         </div>
 
         {/* Level 5 Feature: Clinical Planning */}
