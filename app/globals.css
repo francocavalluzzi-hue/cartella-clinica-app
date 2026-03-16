@@ -27,6 +27,24 @@
   --danger: #b91c1c;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #020617; /* Deep Navy black */
+    --foreground: #f1f5f9;
+    --primary: #2dd4bf; /* Neon Teal */
+    --primary-hover: #14b8a6;
+    --primary-light: rgba(45, 212, 191, 0.1);
+    --surface: #0f172a; /* Slate background */
+    --border: #1e293b;
+    
+    --content-bg: #020617;
+    --card-bg: #0f172a;
+    
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+  }
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
