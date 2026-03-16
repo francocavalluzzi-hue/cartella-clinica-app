@@ -2,9 +2,13 @@
 
 :root {
   /* Cosmedic Palette */
+  --background: #f1f5f9;
+  --foreground: #1e293b;
   --primary: #0f766e; /* Più scuro e incisivo */
   --primary-hover: #115e59;
-  --primary-light: #ccfbf1; /* Leggermente più visibile dello sfondo bianco */
+  --primary-light: #f0fdf4; /* Leggermente più visibile dello sfondo bianco */
+  --surface: #ffffff;
+  --border: #e2e8f0; /* Bordo grigio medio, chiaramente visibile */
   
   --sidebar-bg: #020617; /* Quasi nero */
   --sidebar-text: #cbd5e1;

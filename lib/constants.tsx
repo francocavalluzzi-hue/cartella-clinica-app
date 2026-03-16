@@ -22,3 +22,22 @@ export const INTERVENTO_TYPES = [
   "Blefaroplastica superiore", "Blefaroplastica inferiore",
   "Lipofilling viso", "Mentoplastica", "Altro"
 ]
+
+export const MAPPATURA_MODULI: Record<string, number[]> = {
+  "Rinoplastica": [0, 1, 2, 3],
+  "Blefaroplastica": [0, 1, 2, 3, 7],
+  "Lifting facciale": [0, 1, 2, 3],
+  "Otoplastica": [0, 1, 2, 3, 7],
+  "Mastoplastica additiva": [0, 1, 2, 3],
+  "Mastoplastica riduttiva": [0, 1, 2, 3],
+  "Mastopexi": [0, 1, 2, 3],
+  "Addominoplastica": [0, 1, 2, 3],
+  "Liposuzione": [0, 1, 2, 3],
+  "Lipoaddizione": [0, 1, 2, 3],
+  "BBL": [0, 1, 2, 3],
+  "Blefaroplastica superiore": [0, 1, 2, 3, 7],
+  "Blefaroplastica inferiore": [0, 1, 2, 3, 7],
+  "Lipofilling viso": [0, 1, 2, 3, 7],
+  "Mentoplastica": [0, 1, 2, 3, 7],
+  "Altro": [0, 1]
+}

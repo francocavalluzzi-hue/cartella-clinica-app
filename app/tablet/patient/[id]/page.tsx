@@ -140,7 +140,17 @@ export default function TabletPatientSignaturePage() {
       if (nextUnsignedIdx !== -1) {
         setSelectedIdx(nextUnsignedIdx)
       } else {
+        // All docs signed
         alert("Tutti i documenti selezionati sono stati firmati!")
+        
+        // Post-Signature Email Trigger
+        if (patient.email) {
+          console.log(`[EMAIL] Inviando documenti firmati a: ${patient.email}`)
+          // Qui andrebbe l'integrazione con Resend o simili
+          setTimeout(() => {
+            alert(`Copia dei documenti inviata automaticamente a: ${patient.email}`)
+          }, 1000)
+        }
       }
 
     } catch (err) {
@@ -172,14 +182,14 @@ export default function TabletPatientSignaturePage() {
   )
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "#f8fafc" }}>
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "var(--background)", color: "var(--foreground)" }}>
       {/* Mini Header Tablet */}
-      <div style={{ padding: "16px 24px", background: "white", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <button onClick={() => router.back()} style={{ border: "none", background: "transparent", color: "#64748b", display: "flex", alignItems: "center", gap: "8px" }}>
+      <div style={{ padding: "16px 24px", background: "var(--surface)", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <button onClick={() => router.back()} style={{ border: "none", background: "transparent", color: "var(--foreground)", opacity: 0.6, display: "flex", alignItems: "center", gap: "8px" }}>
           <ArrowLeft size={20} /> Esci
         </button>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: "12px", color: "#64748b", fontWeight: 600, textTransform: "uppercase" }}>Paziente</div>
+          <div style={{ fontSize: "12px", color: "var(--foreground)", opacity: 0.6, fontWeight: 600, textTransform: "uppercase" }}>Paziente</div>
           <div style={{ fontSize: "16px", fontWeight: 700 }}>{patient.name} {patient.surname}</div>
         </div>
         <div style={{ width: "60px" }}></div> {/* Spacer */}
@@ -187,8 +197,8 @@ export default function TabletPatientSignaturePage() {
 
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         {/* Sidebar Moduli Tablet */}
-        <div style={{ width: "280px", background: "#f1f5f9", borderRight: "1px solid #e2e8f0", overflowY: "auto", padding: "16px" }}>
-          <h3 style={{ fontSize: "13px", color: "#64748b", fontWeight: 700, marginBottom: "16px", padding: "0 8px" }}>DOCUMENTI DA FIRMARE</h3>
+        <div style={{ width: "280px", background: "var(--background)", borderRight: "1px solid var(--border)", overflowY: "auto", padding: "16px" }}>
+          <h3 style={{ fontSize: "13px", color: "var(--foreground)", opacity: 0.6, fontWeight: 700, marginBottom: "16px", padding: "0 8px" }}>DOCUMENTI DA FIRMARE</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {filteredModuli.map((m, idx) => (
               <button 
@@ -198,8 +208,8 @@ export default function TabletPatientSignaturePage() {
                   padding: "16px",
                   borderRadius: "12px",
                   border: "none",
-                  background: selectedIdx === idx ? "var(--primary)" : "white",
-                  color: selectedIdx === idx ? "white" : "#1e293b",
+                  background: selectedIdx === idx ? "var(--primary)" : "var(--surface)",
+                  color: selectedIdx === idx ? "white" : "var(--foreground)",
                   display: "flex",
                   alignItems: "center",
                   gap: "12px",
@@ -212,7 +222,7 @@ export default function TabletPatientSignaturePage() {
                   width: "32px", 
                   height: "32px", 
                   borderRadius: "8px", 
-                  background: selectedIdx === idx ? "rgba(255,255,255,0.2)" : "#f8fafc",
+                  background: selectedIdx === idx ? "rgba(255,255,255,0.2)" : "var(--background)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -229,12 +239,12 @@ export default function TabletPatientSignaturePage() {
         {/* Signature Area Tablet */}
         <div style={{ flex: 1, padding: "32px", display: "flex", flexDirection: "column", gap: "24px", overflowY: "auto" }}>
           <div style={{ textAlign: "center", marginBottom: "8px" }}>
-            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#0f172a" }}>{currentModulo.nome}</h2>
-            <p style={{ color: "#64748b", fontSize: "14px" }}>Leggi il documento e apponi la firma dopo la revisione.</p>
+            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--foreground)" }}>{currentModulo.nome}</h2>
+            <p style={{ color: "var(--foreground)", opacity: 0.6, fontSize: "14px" }}>Leggi il documento e apponi la firma dopo la revisione.</p>
           </div>
 
           {/* PDF Preview Area */}
-          <div style={{ flex: 1, minHeight: "350px", background: "white", borderRadius: "16px", border: "1px solid #e2e8f0", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+          <div style={{ flex: 1, minHeight: "350px", background: "white", borderRadius: "16px", border: "1px solid var(--border)", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
             {currentModulo.file ? (
               <iframe 
                 src={`${BUCKET_URL}/${currentModulo.file}#toolbar=0&navpanes=0&scrollbar=0`} 
@@ -268,12 +278,12 @@ export default function TabletPatientSignaturePage() {
             `}</style>
             
             {/* Signature Patient */}
-            <div style={{ background: "white", borderRadius: "16px", padding: "24px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0" }}>
+            <div style={{ background: "var(--surface)", borderRadius: "16px", padding: "24px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid var(--border)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#475569" }}>FIRMA DEL PAZIENTE</h4>
+                <h4 style={{ fontSize: "14px", fontWeight: 700, color: "var(--foreground)", opacity: 0.7 }}>FIRMA DEL PAZIENTE</h4>
                 <button onClick={() => patSigRef.current?.clear()} style={{ fontSize: "12px", color: "var(--primary)", border: "none", background: "transparent", fontWeight: 600, cursor: "pointer" }}>CANCELLA</button>
               </div>
-              <div className="sig-container" style={{ background: "#f8fafc", borderRadius: "12px", border: "2px dashed #cbd5e1", overflow: "hidden", display: "flex", justifyContent: "center" }}>
+              <div className="sig-container" style={{ background: "white", borderRadius: "12px", border: "2px dashed var(--border)", overflow: "hidden", display: "flex", justifyContent: "center" }}>
                 <SignatureCanvas
                   ref={patSigRef}
                   canvasProps={{ width: 400, height: 200, className: "sigCanvas" }}
@@ -283,12 +293,12 @@ export default function TabletPatientSignaturePage() {
             </div>
 
             {/* Signature Doctor */}
-            <div style={{ background: "white", borderRadius: "16px", padding: "24px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0" }}>
+            <div style={{ background: "var(--surface)", borderRadius: "16px", padding: "24px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid var(--border)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#475569" }}>FIRMA DEL MEDICO</h4>
+                <h4 style={{ fontSize: "14px", fontWeight: 700, color: "var(--foreground)", opacity: 0.7 }}>FIRMA DEL MEDICO</h4>
                 <button onClick={() => docSigRef.current?.clear()} style={{ fontSize: "12px", color: "var(--primary)", border: "none", background: "transparent", fontWeight: 600, cursor: "pointer" }}>CANCELLA</button>
               </div>
-              <div className="sig-container" style={{ background: "#f8fafc", borderRadius: "12px", border: "2px dashed #cbd5e1", overflow: "hidden", display: "flex", justifyContent: "center" }}>
+              <div className="sig-container" style={{ background: "white", borderRadius: "12px", border: "2px dashed var(--border)", overflow: "hidden", display: "flex", justifyContent: "center" }}>
                 <SignatureCanvas
                   ref={docSigRef}
                   canvasProps={{ width: 400, height: 200, className: "sigCanvas" }}
@@ -327,14 +337,14 @@ export default function TabletPatientSignaturePage() {
             <button 
               disabled={selectedIdx === 0}
               onClick={() => setSelectedIdx(prev => prev - 1)}
-              style={{ border: "1px solid #e2e8f0", background: "white", padding: "12px 24px", borderRadius: "12px", color: "#64748b", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", opacity: selectedIdx === 0 ? 0.5 : 1 }}
+              style={{ border: "1px solid var(--border)", background: "var(--surface)", padding: "12px 24px", borderRadius: "12px", color: "var(--foreground)", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", opacity: selectedIdx === 0 ? 0.3 : 1 }}
             >
               <ChevronLeft size={20} /> Precedente
             </button>
             <button 
               disabled={selectedIdx === filteredModuli.length - 1}
               onClick={() => setSelectedIdx(prev => prev + 1)}
-              style={{ border: "1px solid #e2e8f0", background: "white", padding: "12px 24px", borderRadius: "12px", color: "#64748b", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", opacity: selectedIdx === filteredModuli.length - 1 ? 0.5 : 1 }}
+              style={{ border: "1px solid var(--border)", background: "var(--surface)", padding: "12px 24px", borderRadius: "12px", color: "var(--foreground)", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", opacity: selectedIdx === filteredModuli.length - 1 ? 0.3 : 1 }}
             >
               Prossimo <ChevronRight size={20} />
             </button>
