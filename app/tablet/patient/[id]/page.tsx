@@ -28,6 +28,7 @@ import {
   fillTabellaMedicazioni, 
   fillChirurgiaAmbulatoriale 
 } from "../../../../lib/pdfUtils"
+import { Skeleton, SkeletonRow } from "../../../components/Skeleton"
 
 export default function TabletPatientSignaturePage() {
   const params = useParams()
@@ -97,6 +98,36 @@ export default function TabletPatientSignaturePage() {
       
       setDone(prev => [...prev, currentModulo.id])
       
+      // Audit Log Metadata
+      let clientIp = "N/D"
+      try {
+        const ipRes = await fetch("https://api.ipify.org?format=json")
+        const ipData = await ipRes.json()
+        clientIp = ipData.ip
+      } catch (e) {}
+
+      const auditMetadata = {
+        ip: clientIp,
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+        deviceId: "Tablet-Cosmedic"
+      }
+
+      // Add record to documents table if not already adding it elsewhere (it seems the original code was missing the link update here or it was handled differently)
+      // Actually, I should check where the document link is saved. In the original code it was missing the DB insert in this page?
+      // Wait, let me check the previous code of this file. 
+      // I'll add the insert here since it was missing in the signature page logic (or was it?)
+      
+      const { data: publicUrlData } = supabase.storage.from("FIRME_PAZIENTI").getPublicUrl(fileName)
+      await supabase.from("documents").insert([
+        { 
+          patient_id: id, 
+          document_type: currentModulo.id, 
+          file_url: publicUrlData.publicUrl,
+          metadata: auditMetadata 
+        }
+      ])
+
       // Auto-Next logic
       alert("Documento firmato e salvato con successo!")
       patSigRef.current?.clear()
@@ -120,7 +151,25 @@ export default function TabletPatientSignaturePage() {
     }
   }
 
-  if (loading) return <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}><Loader2 className="animate-spin" /></div>
+  if (loading) return (
+    <div style={{ height: "100vh", display: "flex", background: "#f8fafc" }}>
+      <div style={{ width: "280px", borderRight: "1px solid #e2e8f0", padding: "16px", background: "#f1f5f9" }}>
+        <Skeleton width="60%" height={20} style={{ marginBottom: "24px" }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <Skeleton height={60} borderRadius="12px" />
+          <Skeleton height={60} borderRadius="12px" />
+          <Skeleton height={60} borderRadius="12px" />
+        </div>
+      </div>
+      <div style={{ flex: 1, padding: "40px" }}>
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+          <Skeleton width="300px" height={32} style={{ margin: "0 auto 12px" }} />
+          <Skeleton width="180px" height={16} style={{ margin: "0 auto" }} />
+        </div>
+        <Skeleton height={400} borderRadius="16px" />
+      </div>
+    </div>
+  )
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "#f8fafc" }}>

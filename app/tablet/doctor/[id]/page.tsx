@@ -20,6 +20,7 @@ import {
   CheckCircle2
 } from "lucide-react"
 import { MODULI } from "../../../../lib/constants"
+import { SkeletonCard, SkeletonRow } from "../../../components/Skeleton"
 
 
 export default function TabletDoctorPatientDetails() {
@@ -71,7 +72,18 @@ export default function TabletDoctorPatientDetails() {
     if (data) setSignedDocuments(data.map(d => d.document_type))
   }
 
-  if (loading) return <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>Caricamento...</div>
+  if (loading) return (
+    <div style={{ padding: "24px", background: "#f8fafc", height: "100vh" }}>
+      <SkeletonCard />
+      <div style={{ marginTop: "32px" }}>
+        <SkeletonRow />
+        <div style={{ height: "12px" }} />
+        <SkeletonRow />
+        <div style={{ height: "12px" }} />
+        <SkeletonRow />
+      </div>
+    </div>
+  )
   if (!patient) return <div style={{ padding: "40px", color: "red" }}>Paziente non trovato</div>
 
   return (
