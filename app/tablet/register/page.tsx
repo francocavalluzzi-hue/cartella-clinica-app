@@ -21,7 +21,8 @@ import {
   Fingerprint,
   Camera,
   RefreshCw,
-  Image as ImageIcon
+  Image as ImageIcon,
+  ArrowLeft
 } from "lucide-react"
 import { BUCKET_URL, MODULI } from "../../../lib/constants"
 import { 
@@ -129,6 +130,27 @@ export default function GuestRegisterWizard() {
       {/* Wizard Progress Header */}
       <div style={{ padding: "32px 24px", background: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
         <div style={{ maxWidth: "800px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
+          <button 
+            onClick={() => router.push('/')}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              background: 'transparent', 
+              border: 'none', 
+              color: 'var(--text-muted)', 
+              fontSize: '14px', 
+              fontWeight: 600, 
+              cursor: 'pointer',
+              position: 'absolute',
+              left: '-100px', // Adjust position as needed
+              top: '50%',
+              transform: 'translateY(-50%)',
+              padding: 0
+            }}
+          >
+            <ArrowLeft size={16} /> Torna alla Home
+          </button>
           <div style={{ position: "absolute", top: "20px", left: "0", right: "0", height: "2px", background: "var(--border)", zIndex: 0 }}></div>
           <div style={{ position: "absolute", top: "20px", left: "0", width: `${((step - 1) / 4) * 100}%`, height: "2px", background: "var(--primary)", transition: "all 0.5s", zIndex: 0 }}></div>
           
