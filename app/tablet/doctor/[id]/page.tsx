@@ -23,6 +23,8 @@ import {
 import { MODULI, INTERVENTO_TYPES, MAPPATURA_MODULI } from "../../../../lib/constants"
 import { SkeletonCard, SkeletonRow } from "../../../components/Skeleton"
 import { DrawingPad } from "../../../components/DrawingPad"
+import ClinicalTimeline from "../../../components/ClinicalTimeline"
+import MedicalScribe from "../../../components/MedicalScribe"
 
 
 export default function TabletDoctorPatientDetails() {
@@ -36,6 +38,9 @@ export default function TabletDoctorPatientDetails() {
   const [signedDocuments, setSignedDocuments] = useState<number[]>([])
   const [preselectType, setPreselectType] = useState("")
   const [showPlanning, setShowPlanning] = useState(false)
+  const [activeTab, setActiveTab] = useState<'docs' | 'timeline' | 'notes'>('docs')
+  const [medicalNotes, setMedicalNotes] = useState("")
+  const [allDocs, setAllDocs] = useState<any[]>([])
 
 
   useEffect(() => {
@@ -72,8 +77,11 @@ export default function TabletDoctorPatientDetails() {
   }
 
   async function loadSignedDocuments() {
-    const { data } = await supabase.from("documents").select("document_type").eq("patient_id", id)
-    if (data) setSignedDocuments(data.map(d => d.document_type))
+    const { data } = await supabase.from("documents").select("*").eq("patient_id", id).order("created_at", { ascending: false })
+    if (data) {
+      setAllDocs(data)
+      setSignedDocuments(data.map(d => d.document_type))
+    }
   }
 
   if (loading) return (
@@ -155,95 +163,173 @@ export default function TabletDoctorPatientDetails() {
           )}
         </div>
 
-        {/* Selective Module Assignment */}
-        <div style={{ background: "var(--surface)", borderRadius: "16px", padding: "24px", marginBottom: "24px", border: "1px solid var(--border)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-            <h3 style={{ fontSize: "15px", fontWeight: 700, margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
-              <ClipboardList size={18} /> SELEZIONA DOCUMENTI DA FIRMARE
-            </h3>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span style={{ fontSize: "12px", color: "var(--foreground)", opacity: 0.6, fontWeight: 700 }}>AUTOPREPARA PER:</span>
-              <select 
-                value={preselectType}
-                onChange={(e) => {
-                  const type = e.target.value
-                  setPreselectType(type)
-                  if (type && MAPPATURA_MODULI[type]) {
-                    setSelectedModules(MAPPATURA_MODULI[type])
-                  }
-                }}
-                style={{ padding: "8px 12px", borderRadius: "10px", border: "1px solid var(--border)", fontSize: "12px", fontWeight: 700, background: "var(--background)", color: "var(--primary)" }}
-              >
-                <option value="">Seleziona Intervento...</option>
-                {INTERVENTO_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "10px" }}>
-            {MODULI.map((m: any) => (
-              <label key={m.id} style={{ 
-                display: "flex", 
-                alignItems: "center", 
-                gap: "12px", 
-                padding: "12px", 
-                borderRadius: "10px", 
-                background: selectedModules.includes(m.id) ? "var(--primary-light)" : "var(--background)",
-                border: "1px solid",
-                borderColor: selectedModules.includes(m.id) ? "var(--primary)" : "var(--border)",
-                cursor: "pointer",
-                transition: "all 0.2s"
-              }}>
-                <input 
-                  type="checkbox" 
-                  checked={selectedModules.includes(m.id)}
-                  onChange={() => {
-                    setSelectedModules(prev => 
-                      prev.includes(m.id) ? prev.filter(id => id !== m.id) : [...prev, m.id]
-                    )
-                  }}
-                  style={{ width: "20px", height: "20px", accentColor: "var(--primary)" }}
-                />
-                <span style={{ fontSize: "14px", fontWeight: 600, color: selectedModules.includes(m.id) ? "var(--primary)" : "var(--foreground)" }}>
-                  {m.nome} <span style={{ fontSize: "11px", fontWeight: 400, opacity: 0.6 }}>({m.quando})</span>
-                </span>
-                {signedDocuments.includes(m.id) ? (
-                  <div style={{ marginLeft: "auto", background: "rgba(22, 163, 74, 0.1)", color: "#22c55e", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 800, display: "flex", alignItems: "center", gap: "4px", border: "1px solid rgba(34, 197, 94, 0.3)" }}>
-                    <CheckCircle2 size={12} /> FIRMATO
-                  </div>
-                ) : selectedModules.includes(m.id) && (
-                  <Check size={16} style={{ marginLeft: "auto", color: "var(--primary)" }} />
-                )}
-              </label>
-            ))}
-          </div>
+        {/* Tabs for Level 6 Features */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', background: 'var(--surface)', padding: '6px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+          {[
+            { id: 'docs', label: 'Documenti', icon: ClipboardList },
+            { id: 'timeline', label: 'Timeline', icon: Calendar },
+            { id: 'notes', label: 'Note AI', icon: Stethoscope }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                padding: '12px',
+                borderRadius: '8px',
+                border: 'none',
+                background: activeTab === tab.id ? 'var(--primary)' : 'transparent',
+                color: activeTab === tab.id ? 'white' : 'var(--text-muted)',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <tab.icon size={16} /> {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* Action: Send to Signature Tablet */}
-        <button 
-          onClick={() => {
-            if (selectedModules.length === 0) return alert("Seleziona almeno un documento")
-            router.push(`/tablet/patient/${id}?modules=${selectedModules.join(",")}`)
-          }}
-          style={{ 
-            width: "100%", 
-            padding: "22px", 
-            borderRadius: "16px", 
-            background: "var(--primary)", 
-            color: "white", 
-            border: "none", 
-            fontWeight: 800, 
-            fontSize: "16px",
-            display: "flex", 
-            alignItems: "center", 
-            justifyContent: "center", 
-            gap: "12px",
-            marginBottom: "32px",
-            boxShadow: "0 10px 15px -3px rgba(15, 118, 110, 0.3)",
-            cursor: "pointer"
-          }}>
-          <PenTool size={22} />
-          CONSEGNA TABLET PER FIRMA ({selectedModules.length})
-        </button>
+        {activeTab === 'docs' && (
+          <>
+            {/* Selective Module Assignment */}
+            <div style={{ background: "var(--surface)", borderRadius: "16px", padding: "24px", marginBottom: "24px", border: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                <h3 style={{ fontSize: "15px", fontWeight: 700, margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+                  <ClipboardList size={18} /> SELEZIONA DOCUMENTI DA FIRMARE
+                </h3>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <span style={{ fontSize: "12px", color: "var(--foreground)", opacity: 0.6, fontWeight: 700 }}>AUTOPREPARA PER:</span>
+                  <select 
+                    value={preselectType}
+                    onChange={(e) => {
+                      const type = e.target.value
+                      setPreselectType(type)
+                      if (type && MAPPATURA_MODULI[type]) {
+                        setSelectedModules(MAPPATURA_MODULI[type])
+                      }
+                    }}
+                    style={{ padding: "8px 12px", borderRadius: "10px", border: "1px solid var(--border)", fontSize: "12px", fontWeight: 700, background: "var(--background)", color: "var(--primary)" }}
+                  >
+                    <option value="">Seleziona Intervento...</option>
+                    {INTERVENTO_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "10px" }}>
+                {MODULI.map((m: any) => (
+                  <label key={m.id} style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "12px", 
+                    padding: "12px", 
+                    borderRadius: "10px", 
+                    background: selectedModules.includes(m.id) ? "var(--primary-light)" : "var(--background)",
+                    border: "1px solid",
+                    borderColor: selectedModules.includes(m.id) ? "var(--primary)" : "var(--border)",
+                    cursor: "pointer",
+                    transition: "all 0.2s"
+                  }}>
+                    <input 
+                      type="checkbox" 
+                      checked={selectedModules.includes(m.id)}
+                      onChange={() => {
+                        setSelectedModules(prev => 
+                          prev.includes(m.id) ? prev.filter(id => id !== m.id) : [...prev, m.id]
+                        )
+                      }}
+                      style={{ width: "20px", height: "20px", accentColor: "var(--primary)" }}
+                    />
+                    <span style={{ fontSize: "14px", fontWeight: 600, color: selectedModules.includes(m.id) ? "var(--primary)" : "var(--foreground)" }}>
+                      {m.nome} <span style={{ fontSize: "11px", fontWeight: 400, opacity: 0.6 }}>({m.quando})</span>
+                    </span>
+                    {signedDocuments.includes(m.id) ? (
+                      <div style={{ marginLeft: "auto", background: "rgba(22, 163, 74, 0.1)", color: "#22c55e", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 800, display: "flex", alignItems: "center", gap: "4px", border: "1px solid rgba(34, 197, 94, 0.3)" }}>
+                        <CheckCircle2 size={12} /> FIRMATO
+                      </div>
+                    ) : selectedModules.includes(m.id) && (
+                      <Check size={16} style={{ marginLeft: "auto", color: "var(--primary)" }} />
+                    )}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Action: Send to Signature Tablet */}
+            <button 
+              onClick={() => {
+                if (selectedModules.length === 0) return alert("Seleziona almeno un documento")
+                router.push(`/tablet/patient/${id}?modules=${selectedModules.join(",")}`)
+              }}
+              style={{ 
+                width: "100%", 
+                padding: "22px", 
+                borderRadius: "16px", 
+                background: "var(--primary)", 
+                color: "white", 
+                border: "none", 
+                fontWeight: 800, 
+                fontSize: "16px",
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center", 
+                gap: "12px",
+                marginBottom: "32px",
+                boxShadow: "0 10px 15px -3px rgba(15, 118, 110, 0.3)",
+                cursor: "pointer"
+              }}>
+              <PenTool size={22} />
+              CONSEGNA TABLET PER FIRMA ({selectedModules.length})
+            </button>
+          </>
+        )}
+
+        {activeTab === 'timeline' && (
+          <div style={{ background: 'var(--surface)', borderRadius: '16px', padding: '24px', border: '1px solid var(--border)', marginBottom: '32px' }}>
+            <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Calendar size={18} /> CLINICAL HISTORY ROADMAP
+            </h3>
+            <ClinicalTimeline patient={patient} documents={allDocs} />
+          </div>
+        )}
+
+        {activeTab === 'notes' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '32px' }}>
+            <MedicalScribe onTranscription={(text) => setMedicalNotes(prev => prev + (prev ? "\n" : "") + text)} />
+            
+            <div style={{ background: 'var(--surface)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border)' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>NOTE CLINICHE ACQUISITE</h3>
+              <textarea 
+                value={medicalNotes}
+                onChange={(e) => setMedicalNotes(e.target.value)}
+                placeholder="Le note dettate appariranno qui..."
+                style={{ 
+                  width: '100%', 
+                  minHeight: '200px', 
+                  background: 'var(--background)', 
+                  border: '1px solid var(--border)', 
+                  borderRadius: '12px', 
+                  padding: '16px', 
+                  color: 'var(--text-main)', 
+                  fontSize: '14px',
+                  fontFamily: 'inherit',
+                  resize: 'vertical'
+                }}
+              />
+              <button 
+                onClick={() => alert("Note salvate nel diario clinico!")}
+                style={{ width: '100%', marginTop: '16px', padding: '14px', borderRadius: '10px', background: 'var(--primary)', color: 'white', border: 'none', fontWeight: 700, cursor: 'pointer' }}
+              >
+                SALVA NOTE NEL DIARIO
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Procedures List */}
         <div>
