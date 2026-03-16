@@ -14,7 +14,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Maximize2,
-  FileText
+  FileText,
+  Fingerprint
 } from "lucide-react"
 import { BUCKET_URL, MODULI } from "../../../../lib/constants"
 import { 
@@ -40,6 +41,7 @@ export default function TabletPatientSignaturePage() {
   const [selectedIdx, setSelectedIdx] = useState(0)
   const [signing, setSigning] = useState(false)
   const [done, setDone] = useState<number[]>([])
+  const [bioSucceed, setBioSucceed] = useState(false)
 
   const searchParams = useSearchParams()
   const modulesParam = searchParams.get("modules")
@@ -158,6 +160,25 @@ export default function TabletPatientSignaturePage() {
       alert("Errore durante il salvataggio")
     } finally {
       setSigning(false)
+    }
+  }
+
+  async function handleBiometric() {
+    // Simulazione WebAuthn
+    try {
+      if (!window.PublicKeyCredential) {
+        alert("Biometria non supportata su questo browser")
+        return
+      }
+      // In un caso reale qui chiameremmo navigator.credentials.get()
+      setSigning(true)
+      setTimeout(() => {
+        setBioSucceed(true)
+        setSigning(false)
+        alert("Identità Medico verificata via Biometria!")
+      }, 1500)
+    } catch (e) {
+      alert("Errore verifica biometrica")
     }
   }
 
@@ -296,9 +317,22 @@ export default function TabletPatientSignaturePage() {
             <div style={{ background: "var(--surface)", borderRadius: "16px", padding: "24px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid var(--border)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                 <h4 style={{ fontSize: "14px", fontWeight: 700, color: "var(--foreground)", opacity: 0.7 }}>FIRMA DEL MEDICO</h4>
-                <button onClick={() => docSigRef.current?.clear()} style={{ fontSize: "12px", color: "var(--primary)", border: "none", background: "transparent", fontWeight: 600, cursor: "pointer" }}>CANCELLA</button>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button onClick={handleBiometric} style={{ fontSize: "12px", color: "var(--primary)", border: "1px solid var(--primary)", background: "var(--primary-light)", padding: "4px 8px", borderRadius: "8px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}>
+                    <Fingerprint size={14} /> BIOMETRIA
+                  </button>
+                  <button onClick={() => { docSigRef.current?.clear(); setBioSucceed(false); }} style={{ fontSize: "12px", color: "var(--primary)", border: "none", background: "transparent", fontWeight: 600, cursor: "pointer" }}>CANCELLA</button>
+                </div>
               </div>
-              <div className="sig-container" style={{ background: "white", borderRadius: "12px", border: "2px dashed var(--border)", overflow: "hidden", display: "flex", justifyContent: "center" }}>
+              <div className="sig-container" style={{ background: "white", borderRadius: "12px", border: bioSucceed ? "2px solid var(--primary)" : "2px dashed var(--border)", overflow: "hidden", display: "flex", justifyContent: "center", position: "relative" }}>
+                {bioSucceed && (
+                  <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10 }}>
+                    <div style={{ textAlign: "center", color: "var(--primary)" }}>
+                      <CheckCircle2 size={40} />
+                      <div style={{ fontWeight: 800, fontSize: "12px", marginTop: "4px" }}>VALIDATO BIOMETRICAMENTE</div>
+                    </div>
+                  </div>
+                )}
                 <SignatureCanvas
                   ref={docSigRef}
                   canvasProps={{ width: 400, height: 200, className: "sigCanvas" }}

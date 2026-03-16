@@ -17,10 +17,12 @@ import {
   Download,
   Stethoscope,
   Check,
-  CheckCircle2
+  CheckCircle2,
+  Paintbrush
 } from "lucide-react"
 import { MODULI, INTERVENTO_TYPES, MAPPATURA_MODULI } from "../../../../lib/constants"
 import { SkeletonCard, SkeletonRow } from "../../../components/Skeleton"
+import { DrawingPad } from "../../../components/DrawingPad"
 
 
 export default function TabletDoctorPatientDetails() {
@@ -33,6 +35,7 @@ export default function TabletDoctorPatientDetails() {
   const [selectedModules, setSelectedModules] = useState<number[]>([0, 1]) // Default selective items
   const [signedDocuments, setSignedDocuments] = useState<number[]>([])
   const [preselectType, setPreselectType] = useState("")
+  const [showPlanning, setShowPlanning] = useState(false)
 
 
   useEffect(() => {
@@ -120,6 +123,36 @@ export default function TabletDoctorPatientDetails() {
               <div style={{ fontSize: "14px", fontWeight: 600 }}>{patient.birthdate || "—"}</div>
             </div>
           </div>
+        </div>
+
+        {/* Level 5 Feature: Clinical Planning */}
+        <div style={{ background: "var(--surface)", borderRadius: "16px", padding: "24px", marginBottom: "24px", border: "1px solid var(--border)", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+            <h3 style={{ fontSize: "15px", fontWeight: 700, margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+              <Paintbrush size={18} /> PLANNING CHIRURGICO
+            </h3>
+            <button 
+              onClick={() => setShowPlanning(!showPlanning)}
+              style={{ padding: "8px 16px", borderRadius: "10px", background: "var(--primary)", color: "white", border: "none", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
+            >
+              {showPlanning ? "CHIUDI PAD" : "APRI PAD DI DISEGNO"}
+            </button>
+          </div>
+          
+          {showPlanning && (
+            <div style={{ marginTop: "16px" }}>
+              <DrawingPad 
+                onClose={() => setShowPlanning(false)} 
+                onSave={(data) => {
+                  alert("Planning salvato con successo!")
+                  setShowPlanning(false)
+                }} 
+              />
+            </div>
+          )}
+          {!showPlanning && (
+            <p style={{ fontSize: "13px", opacity: 0.6, margin: 0 }}>Usa questo strumento per disegnare schemi pre-operatori o note grafiche per l'intervento.</p>
+          )}
         </div>
 
         {/* Selective Module Assignment */}

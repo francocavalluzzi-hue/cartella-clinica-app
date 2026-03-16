@@ -14,14 +14,20 @@ import {
   ChevronRight,
   Plus,
   ArrowRight,
-  Filter
+  Filter,
+  TrendingUp,
+  Clock,
+  CheckCircle,
+  Activity
 } from "lucide-react"
+import { SkeletonRow } from "../../components/Skeleton"
 
 export default function TabletDoctorDashboard() {
   const router = useRouter()
   const [patients, setPatients] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [stats, setStats] = useState({ today: 0, pending: 0, completed: 0 })
   
   // State for Registration Modal
   const [showRegModal, setShowRegModal] = useState(false)
@@ -44,7 +50,20 @@ export default function TabletDoctorDashboard() {
   async function loadPatients() {
     setLoading(true)
     const { data } = await supabase.from("patients").select("*").order("surname")
+    const { data: docs } = await supabase.from("documents").select("created_at")
+    
     setPatients(data || [])
+    
+    // Simple mock stats for demo purposes based on real data
+    const todayStr = new Date().toISOString().split('T')[0]
+    const patientsToday = (data || []).filter((p: any) => String(p.created_at || "").startsWith(todayStr)).length
+    const totalDocs = (docs || []).length
+    
+    setStats({
+      today: patientsToday,
+      pending: (data || []).length * 2 - totalDocs, // Mock logic
+      completed: totalDocs
+    })
     setLoading(false)
   }
 
@@ -75,25 +94,64 @@ export default function TabletDoctorDashboard() {
     `${p.name} ${p.surname}`.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  if (loading) return <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc" }}>Caricamento...</div>
+  if (loading) return (
+    <div style={{ padding: "24px", background: "var(--background)", height: "100vh" }}>
+      <div style={{ display: "flex", gap: "16px", marginBottom: "32px" }}>
+        <div style={{ flex: 1, height: "100px", background: "var(--surface)", borderRadius: "16px" }} />
+        <div style={{ flex: 1, height: "100px", background: "var(--surface)", borderRadius: "16px" }} />
+      </div>
+      <SkeletonRow />
+      <div style={{ height: "12px" }} />
+      <SkeletonRow />
+      <div style={{ height: "12px" }} />
+      <SkeletonRow />
+    </div>
+  )
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "#f8fafc" }}>
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "var(--background)", color: "var(--foreground)" }}>
       {/* Tablet Dr Header */}
-      <header style={{ padding: "20px 24px", background: "white", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <header style={{ padding: "20px 24px", background: "var(--surface)", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#0f172a" }}>Doctor Panel</h1>
-          <p style={{ fontSize: "12px", color: "#64748b" }}>Gestione Pazienti Mobile</p>
+          <h1 style={{ fontSize: "20px", fontWeight: 800 }}>Cosmedic Panel</h1>
+          <p style={{ fontSize: "12px", opacity: 0.6 }}>Gestione Clinica Premium</p>
         </div>
-        <button onClick={() => router.push("/")} style={{ padding: "10px 16px", borderRadius: "10px", background: "#f1f5f9", border: "none", fontSize: "13px", fontWeight: 600, color: "#475569" }}>
-          Versione Desktop
-        </button>
+        <div style={{ display: "flex", gap: "12px" }}>
+          <div style={{ background: "var(--primary-light)", color: "var(--primary)", padding: "8px 16px", borderRadius: "12px", fontSize: "12px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
+            <Activity size={16} /> LIVE
+          </div>
+        </div>
       </header>
+
+      {/* Analytics Row - Level 5 */}
+      <div style={{ padding: "20px 24px 0", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" }}>
+        <div style={{ background: "var(--surface)", padding: "16px", borderRadius: "20px", border: "1px solid var(--border)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+            <div style={{ background: "rgba(13, 148, 136, 0.1)", color: "var(--primary)", padding: "8px", borderRadius: "10px" }}><TrendingUp size={18}/></div>
+            <span style={{ fontSize: "20px", fontWeight: 800 }}>{stats.today}</span>
+          </div>
+          <div style={{ fontSize: "11px", fontWeight: 700, opacity: 0.6 }}>PAZIENTI OGGI</div>
+        </div>
+        <div style={{ background: "var(--surface)", padding: "16px", borderRadius: "20px", border: "1px solid var(--border)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+            <div style={{ background: "rgba(245, 158, 11, 0.1)", color: "#f59e0b", padding: "8px", borderRadius: "10px" }}><Clock size={18}/></div>
+            <span style={{ fontSize: "20px", fontWeight: 800 }}>{stats.pending}</span>
+          </div>
+          <div style={{ fontSize: "11px", fontWeight: 700, opacity: 0.6 }}>FIRME PENDENTI</div>
+        </div>
+        <div style={{ background: "var(--surface)", padding: "16px", borderRadius: "20px", border: "1px solid var(--border)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+            <div style={{ background: "rgba(16, 185, 129, 0.1)", color: "#10b981", padding: "8px", borderRadius: "10px" }}><CheckCircle size={18}/></div>
+            <span style={{ fontSize: "20px", fontWeight: 800 }}>{stats.completed}</span>
+          </div>
+          <div style={{ fontSize: "11px", fontWeight: 700, opacity: 0.6 }}>COMPLETATI</div>
+        </div>
+      </div>
 
       {/* Search Bar - Big for Tablet */}
       <div style={{ padding: "20px 24px" }}>
         <div style={{ position: "relative" }}>
-          <Search size={22} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />
+          <Search size={22} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "var(--foreground)", opacity: 0.4 }} />
           <input 
             type="text"
             placeholder="Cerca paziente per nome o cognome..."
@@ -103,8 +161,10 @@ export default function TabletDoctorDashboard() {
               width: "100%", 
               padding: "18px 18px 18px 54px", 
               borderRadius: "16px", 
-              border: "1px solid #e2e8f0", 
+              border: "1px solid var(--border)", 
               fontSize: "16px",
+              background: "var(--surface)",
+              color: "var(--foreground)",
               boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)",
               outline: "none"
             }}
@@ -119,14 +179,15 @@ export default function TabletDoctorDashboard() {
             <div key={p.id} 
               onClick={() => router.push(`/tablet/doctor/${p.id}`)}
               style={{ 
-                background: "white", 
+                background: "var(--surface)", 
                 padding: "20px", 
                 borderRadius: "16px", 
                 display: "flex", 
                 alignItems: "center", 
                 gap: "16px",
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+                border: "1px solid var(--border)",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                cursor: "pointer"
               }}>
               <div style={{ 
                 width: "56px", 
@@ -143,8 +204,8 @@ export default function TabletDoctorDashboard() {
                 {p.name[0]}{p.surname[0]}
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: "16px", fontWeight: 700, color: "#1e293b", marginBottom: "4px" }}>{p.name} {p.surname}</div>
-                <div style={{ display: "flex", gap: "16px", fontSize: "13px", color: "#64748b" }}>
+                <div style={{ fontSize: "16px", fontWeight: 700, marginBottom: "4px" }}>{p.name} {p.surname}</div>
+                <div style={{ display: "flex", gap: "16px", fontSize: "13px", opacity: 0.6 }}>
                   <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Calendar size={14} /> {p.birthdate || "N/D"}</span>
                   <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Phone size={14} /> {p.phone || "N/D"}</span>
                 </div>
@@ -162,13 +223,13 @@ export default function TabletDoctorDashboard() {
       </div>
 
       {/* Mobile Footer Actions */}
-      <div style={{ padding: "16px 24px", background: "white", borderTop: "1px solid #e2e8f0", display: "flex", gap: "12px" }}>
+      <div style={{ padding: "16px 24px", background: "var(--surface)", borderTop: "1px solid var(--border)", display: "flex", gap: "12px" }}>
         <button 
           onClick={() => setShowRegModal(true)}
           style={{ flex: 1, padding: "16px", borderRadius: "12px", background: "var(--primary)", color: "white", border: "none", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
           <Plus size={20} /> Nuovo Paziente
         </button>
-        <button style={{ padding: "16px", borderRadius: "12px", background: "#f1f5f9", border: "none", color: "#475569" }}>
+        <button style={{ padding: "16px", borderRadius: "12px", background: "var(--background)", border: "none", color: "var(--foreground)", opacity: 0.6 }}>
           <Filter size={20} />
         </button>
       </div>
