@@ -8,16 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Cosmedic Clinic Management",
   description: "Sistema gestione clinica intelligente",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Cosmedic",
-  },
 };
-
-export const viewport = {
-  themeColor: "#0f766e",
-}
 
 export default function RootLayout({
   children,
