@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useEffect, useState } from 'react'
 import { 
   LayoutDashboard, 
   Users, 
@@ -21,6 +22,27 @@ const menuItems = [
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    try {
+      const s = typeof window !== 'undefined' ? localStorage.getItem('theme') : null
+      if (s === 'dark' || s === 'light') return s as 'dark' | 'light'
+      return typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    } catch (e) { return 'light' }
+  })
+
+  useEffect(() => {
+    try {
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        localStorage.setItem('theme', 'dark')
+      } else {
+        document.documentElement.removeAttribute('data-theme')
+        localStorage.setItem('theme', 'light')
+      }
+    } catch (e) {}
+  }, [theme])
+
+  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark')
 
   return (
     <aside style={{
@@ -33,7 +55,7 @@ export default function Sidebar() {
       position: "fixed",
       left: 0,
       top: 0,
-      padding: "24px 16px"
+      padding: "20px 12px"
     }}>
       {/* Logo */}
       <div style={{ padding: "0 12px", marginBottom: "40px", display: "flex", alignItems: "center", gap: "12px" }}>
@@ -71,20 +93,23 @@ export default function Sidebar() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "12px",
-                padding: "12px",
-                borderRadius: "8px",
+                gap: "14px",
+                padding: "14px",
+                minHeight: '48px',
+                borderRadius: "var(--radius-sm)",
                 textDecoration: "none",
                 color: isActive ? "white" : "var(--sidebar-text)",
                 background: isActive ? "var(--sidebar-hover)" : "transparent",
-                marginBottom: "4px",
-                fontSize: "14px",
-                fontWeight: isActive ? 600 : 400,
-                transition: "all 0.2s",
+                marginBottom: "6px",
+                fontSize: "15px",
+                fontWeight: isActive ? 700 : 500,
+                transition: "transform 0.12s, background 0.12s",
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
                 opacity: item.comingSoon ? 0.6 : 1
               }}
             >
-              <item.icon size={20} />
+              <item.icon size={22} />
               {item.name}
             </Link>
           )
@@ -94,10 +119,11 @@ export default function Sidebar() {
       {/* Footer / User info */}
       <div style={{ 
         borderTop: "1px solid #1f2937", 
-        paddingTop: "24px",
+        paddingTop: "18px",
         display: "flex",
         alignItems: "center",
-        gap: "12px"
+        gap: "12px",
+        justifyContent: 'space-between'
       }}>
         <div style={{ 
           width: "36px", 
@@ -115,6 +141,17 @@ export default function Sidebar() {
           <div style={{ fontSize: "13px", fontWeight: 600 }}>Dr. Cosmedic</div>
           <div style={{ fontSize: "11px", color: "var(--sidebar-text)" }}>Amministratore</div>
         </div>
+        {/* Theme toggle */}
+        <button onClick={toggleTheme} aria-label="Toggle theme" style={{
+          background: 'transparent',
+          border: '1px solid var(--border)',
+          color: 'var(--sidebar-text)',
+          padding: '8px',
+          borderRadius: '8px',
+          cursor: 'pointer'
+        }}>
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
       </div>
     </aside>
   )

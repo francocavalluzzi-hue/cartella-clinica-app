@@ -69,6 +69,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     return () => { supabase.removeChannel(channel) }
   }, [isLanding, isLogin])
 
+
   if (isTablet || isLanding || isLogin) {
     return (
       <div style={{ minHeight: "100vh", background: "var(--content-bg)" }}>
@@ -87,6 +88,8 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
         minHeight: "100vh",
         background: "var(--content-bg)"
       }}>
+        {/* Theme toggle moved to Sidebar for accessibility on tablet/phone */}
+
         <CommandPalette />
         {children}
       </main>

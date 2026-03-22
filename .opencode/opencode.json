@@ -1,0 +1,23 @@
+﻿{
+  "agent": {
+    "mobile-app-creator": {
+      "description": "Specialista sviluppo app mobile e UI/UX design per smartphone/tablet",
+      "mode": "subagent",
+      "model": "openrouter/xiaomi/mimo-v2-flash:free",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true,
+        "grep": true,
+        "glob": true,
+        "webfetch": true
+      },
+      "permission": {
+        "edit": "ask",
+        "bash": "ask"
+      },
+      "temperature": 0.3
+    }
+  }
+}

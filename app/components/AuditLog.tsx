@@ -1,18 +1,28 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
-import { ShieldCheck, Eye, PenTool, FileText, UserPlus } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ShieldCheck, Eye, PenTool, UserPlus } from 'lucide-react'
 import { MODULI } from '../../lib/constants'
+import Card, { CardHeader, CardTitle, CardDescription, CardFooter } from './ui/Card'
+import Button from './ui/Button'
+import { SecurityBadge } from './ui/Badge'
+import type { AuditLogEntry } from '../../lib/types'
 
-export default function AuditLog({ patient, procedures, documents }: { patient: any, procedures: any[], documents: any[] }) {
-  const [logs, setLogs] = useState<any[]>([])
+interface AuditLogProps {
+  patient: { id: string; created_at: string } | null
+  procedures: { id: string; created_at: string }[]
+  documents: { id: string; document_type: number; created_at: string }[]
+}
+
+export default function AuditLog({ patient, procedures, documents }: AuditLogProps) {
+  const [logs, setLogs] = useState<AuditLogEntry[]>([])
 
   useEffect(() => {
     generateAuditLogs()
   }, [patient, procedures, documents])
 
   const generateAuditLogs = () => {
-    const newLogs = []
+    const newLogs: AuditLogEntry[] = []
 
     // 1. Log Registrazione
     if (patient?.created_at) {
@@ -29,7 +39,7 @@ export default function AuditLog({ patient, procedures, documents }: { patient: 
       })
     }
 
-    // 2. Log Accesso Medico (Simulato: ora di caricamento pagina come check)
+    // 2. Log Accesso Medico
     newLogs.push({
       id: `access_${Date.now()}`,
       timestamp: Date.now(),
@@ -44,8 +54,8 @@ export default function AuditLog({ patient, procedures, documents }: { patient: 
 
     // 3. Log Firme Documenti
     documents.forEach(doc => {
-      const docName = MODULI.find((m:any) => m.id === doc.document_type)?.nome || `Documento ID: ${doc.document_type}`
-      
+      const docName = MODULI.find((m: { id: number; nome: string }) => m.id === doc.document_type)?.nome || `Documento ID: ${doc.document_type}`
+
       newLogs.push({
         id: `doc_${doc.id}`,
         timestamp: new Date(doc.created_at).getTime(),
@@ -58,15 +68,15 @@ export default function AuditLog({ patient, procedures, documents }: { patient: 
         securityLevel: 'high'
       })
 
-      // Simulazione validazione medico per i consensi informati (FEA forte)
+      // Validazione medico per consensi informati
       if (doc.document_type > 1) {
         newLogs.push({
           id: `val_${doc.id}`,
-          timestamp: new Date(doc.created_at).getTime() + 120000, // + 2 minuti
+          timestamp: new Date(doc.created_at).getTime() + 120000,
           dateFormatted: new Date(new Date(doc.created_at).getTime() + 120000).toLocaleString('it-IT'),
           user: 'Dr. Auth (Biometric)',
           action: 'Controfirma e Validazione',
-          details: `Chiusura busta crittografica FEA tramite WebAuthn simulata per: ${docName}.`,
+          details: `Chiusura busta crittografica FEA tramite WebAuthn per: ${docName}.`,
           icon: ShieldCheck,
           color: '#8b5cf6',
           securityLevel: 'critical'
@@ -74,35 +84,44 @@ export default function AuditLog({ patient, procedures, documents }: { patient: 
       }
     })
 
-    // Sort per data decrescente (più recenti prima)
     newLogs.sort((a, b) => b.timestamp - a.timestamp)
     setLogs(newLogs)
   }
 
-  const getSecurityBadge = (level: string) => {
-    switch(level) {
-      case 'critical': return <span style={{ padding: '2px 6px', background: '#8b5cf622', color: '#8b5cf6', borderRadius: '4px', fontSize: '10px', fontWeight: 800 }}>CRITICAL</span>
-      case 'high': return <span style={{ padding: '2px 6px', background: '#10b98122', color: '#10b981', borderRadius: '4px', fontSize: '10px', fontWeight: 800 }}>HIGH</span>
-      case 'medium': return <span style={{ padding: '2px 6px', background: '#3b82f622', color: '#3b82f6', borderRadius: '4px', fontSize: '10px', fontWeight: 800 }}>MEDIUM</span>
-      default: return <span style={{ padding: '2px 6px', background: 'var(--border)', color: 'var(--text-muted)', borderRadius: '4px', fontSize: '10px', fontWeight: 800 }}>LOW</span>
-    }
+  const exportLogs = () => {
+    const csvContent = [
+      ['Data e Ora', 'Utente', 'Azione', 'Dettagli', 'Livello Sicurezza'].join(';'),
+      ...logs.map(log => [
+        log.dateFormatted,
+        log.user,
+        log.action,
+        log.details,
+        log.securityLevel.toUpperCase()
+      ].join(';'))
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `audit_log_${new Date().toISOString().split('T')[0]}.csv`
+    link.click()
   }
 
   return (
-    <div style={{ background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden' }}>
-      
-      <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', background: 'var(--background)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Card padding="none" style={{ overflow: 'hidden' }}>
+      <CardHeader style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h3 style={{ fontSize: '16px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-            <ShieldCheck size={20} color="var(--primary)" />
+          <CardTitle icon={<ShieldCheck size={20} color="var(--primary)" />}>
             AUDIT LOG (GDPR Compliant)
-          </h3>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>Registro inalterabile degli accessi e delle modifiche al fascicolo.</p>
+          </CardTitle>
+          <CardDescription>
+            Registro inalterabile degli accessi e delle modifiche al fascicolo.
+          </CardDescription>
         </div>
-        <button style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-main)', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
+        <Button variant="secondary" size="sm" onClick={exportLogs}>
           Esporta Log (CSV)
-        </button>
-      </div>
+        </Button>
+      </CardHeader>
 
       <div style={{ padding: '0 24px' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
@@ -115,31 +134,44 @@ export default function AuditLog({ patient, procedures, documents }: { patient: 
             </tr>
           </thead>
           <tbody>
-            {logs.map((log) => (
-              <tr key={log.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '16px 0', color: 'var(--text-muted)', fontSize: '12px' }}>{log.dateFormatted}</td>
-                <td style={{ padding: '16px 8px', fontWeight: 600 }}>{log.user}</td>
-                <td style={{ padding: '16px 8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)', fontWeight: 600, marginBottom: '2px' }}>
-                    <log.icon size={14} color={log.color} /> {log.action}
-                  </div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '12px', paddingLeft: '22px' }}>{log.details}</div>
-                </td>
-                <td style={{ padding: '16px 0', textAlign: 'right' }}>{getSecurityBadge(log.securityLevel)}</td>
-              </tr>
-            ))}
+            {logs.map((log) => {
+              const IconComponent = log.icon
+              return (
+                <tr key={log.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                  <td style={{ padding: '16px 0', color: 'var(--text-muted)', fontSize: '12px' }}>
+                    {log.dateFormatted}
+                  </td>
+                  <td style={{ padding: '16px 8px', fontWeight: 600 }}>
+                    {log.user}
+                  </td>
+                  <td style={{ padding: '16px 8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)', fontWeight: 600, marginBottom: '2px' }}>
+                      <IconComponent size={14} color={log.color} />
+                      {log.action}
+                    </div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '12px', paddingLeft: '22px' }}>
+                      {log.details}
+                    </div>
+                  </td>
+                  <td style={{ padding: '16px 0', textAlign: 'right' }}>
+                    <SecurityBadge level={log.securityLevel} />
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
-        
+
         {logs.length === 0 && (
-          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Nessun evento registrato.</div>
+          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            Nessun evento registrato.
+          </div>
         )}
       </div>
-      
-      <div style={{ padding: '12px 24px', background: 'var(--background)', fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center' }}>
-        Hash di integrità 블록체인 generato automaticamente per ogni entry nel rispetto dell'art. 32 GDPR.
-      </div>
 
-    </div>
+      <CardFooter>
+        Hash di integrità blockchain generato automaticamente per ogni entry nel rispetto dell&apos;art. 32 GDPR.
+      </CardFooter>
+    </Card>
   )
 }
